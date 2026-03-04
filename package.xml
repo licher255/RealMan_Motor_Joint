@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>realman_whj_driver</name>
+  <version>1.0.0</version>
+  <description>ROS2 driver for RealMan WHJ series joint motors</description>
+  
+  <maintainer email="support@example.com">RealMan Driver Team</maintainer>
+  <license>MIT</license>
+  
+  <url type="website">https://github.com/yourusername/realman_whj_driver</url>
+  <url type="bugtracker">https://github.com/yourusername/realman_whj_driver/issues</url>
+  
+  <author>RealMan Driver Team</author>
+  
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

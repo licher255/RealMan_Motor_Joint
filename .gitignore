@@ -1,0 +1,45 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+[Bb]uild/
+
+# Old/third-party archives (moved to third_party/)
+aa1c7-main/
+*.zip
+*.tar.gz
+*.7z
+
+# ZLG driver (now in third_party/zlgcan/)
+zlgcan_*/
+zlgcan*.zip
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+
+# ROS2
+install/
+log/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+/dual_arm-2
