@@ -1,49 +1,6 @@
 """
-================================================================================
-RealMan WHJ Motion Controller - ORIGINAL VERSION (原始版本)
-================================================================================
-
-文件名: motion_controller.py
-版本: 原始版本（标准轨迹控制）
-用途: WHJ60 电机梯形轨迹规划控制
-
-适用场景:
-- 单电机或多电机控制（无干扰环境）
-- 需要平滑的梯形速度轨迹规划
-- CAN 总线上无大量干扰帧
-
-功能:
-- 梯形速度轨迹规划（加速-匀速-减速）
-- 实时位置反馈
-- 500Hz 位置指令更新率
-- 自动超时计算
-
-依赖:
-- core/zlgcan_driver.py
-- core/protocol/whj_protocol.py
-- drivers/motor_control.py
-
-使用方法:
-    python motion_controller.py <motor_id>
-
-命令:
-    m <pos>  - 移动到指定位置（带轨迹规划）
-    r        - 读取当前位置
-    e        - 使能电机
-    d        - 禁用电机
-    c        - 清除错误
-    s        - 显示状态
-    q        - 退出
-
-注意:
-- 此版本为标准版本，无 Kinco 干扰处理
-- 如果 CAN 总线上有 Kinco 电机，请使用:
-  * motion_controller_filter_switching.py (硬件滤波方案)
-  * motion_controller_software_filter.py (软件滤波方案)
-
-作者: Auto-generated
-日期: 2026-03-09
-================================================================================
+RealMan WHJ Motion Controller with Trajectory Planning
+Implements trapezoidal velocity profile for smooth motion
 """
 
 import sys
@@ -56,7 +13,7 @@ from enum import Enum
 
 from core import ZlgCanDriver, ZCANDeviceType
 from core.protocol import WHJProtocol, Register, WorkMode
-from drivers.motor_control import MotorController, parse_32bit_value
+from .motor_control import MotorController, parse_32bit_value
 
 
 # Global variables for cleanup
@@ -543,7 +500,8 @@ def main():
                     print(f"Enabled: {'Yes' if enabled else 'No'}")
                 pos = motor.get_position()
                 if pos is not None:
-                    print(f"Position: {pos:.4f}°")            
+                    print(f"Position: {pos:.4f}°")
+            
             else:
                 print("Unknown command or missing argument")
         

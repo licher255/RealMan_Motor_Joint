@@ -197,9 +197,9 @@ class ZlgCanDriver:
         is_64bit = platform.architecture()[0] == "64bit"
         arch = "x64" if is_64bit else "x86"
         
-        # Get project root (examples/python/../../)
+        # Get project root (examples/python/core/../../..)
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.dirname(os.path.dirname(script_dir))
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
         
         # Primary path: third_party/zlgcan
         dll_path = os.path.join(project_root, "third_party", "zlgcan", arch, "zlgcan.dll")
@@ -425,7 +425,7 @@ class ZlgCanDriver:
         ret = self._dll.ZCAN_TransmitFD(self._channel_handle, byref(tx_data), 1)
         return ret == 1
 
-    def send(self, can_id: int, data: bytes, is_extended: bool = False) -> bool:
+    def send(self, can_id: int, data: bytes, is_extended: bool = False, bitrate_switch: bool = True) -> bool:
         """
         Simple send method
         
@@ -433,6 +433,7 @@ class ZlgCanDriver:
             can_id: CAN ID
             data: Data bytes (max 64 bytes for CAN FD)
             is_extended: Use extended ID (29-bit)
+            bitrate_switch: Enable bitrate switching for data phase (default: True)
         
         Returns:
             True if successful
@@ -441,7 +442,7 @@ class ZlgCanDriver:
             can_id=can_id,
             data=data,
             is_extended=is_extended,
-            bitrate_switch=True
+            bitrate_switch=bitrate_switch
         )
         return self.send_frame(frame)
 

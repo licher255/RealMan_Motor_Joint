@@ -14,83 +14,90 @@ This is a cross-platform C++ driver library for **RealMan WHJ series joint motor
 | J20   | Joint 60   | 2 mA/LSB      |
 | J25   | Joint 120  | 2 mA/LSB      |
 
+**Supported CAN Devices (Windows):**
+- ZLG USBCANFD-100U-mini
+- ZLG USBCANFD-100U/200U/400U/800U
+
 ### Key Features
 
 - **Cross-Platform**: Linux (SocketCAN) and Windows (USB-CAN adapters)
 - **CAN FD Support**: High-speed 5 Mbps data rate
 - **Modern C++17**: Clean, type-safe API with move semantics
 - **ROS2 Integration**: Native ROS2 node with joint state publishing
-- **Python Bindings**: Full Python API via pybind11
+- **Python Support**: Pure Python implementation using ctypes + C++ pybind11 bindings
 - **Simulation Mode**: Test without hardware using "sim" interface
 
 ## Technology Stack
 
 | Component | Technology |
 |-----------|------------|
-| Language | C++17 |
+| Language | C++17, Python 3.8+ |
 | Build System | CMake 3.16+ |
-| CAN Communication | SocketCAN (Linux) / USB-CAN (Windows) |
+| CAN Communication | SocketCAN (Linux) / ZLG USB-CAN (Windows) |
 | ROS2 Integration | rclcpp, sensor_msgs, std_msgs |
-| Python Bindings | pybind11 |
+| Python Bindings | pybind11 (optional), ctypes (pure Python) |
 | Testing | Custom C++ test framework |
 
 ## Project Structure
 
 ```
-realman_whj_driver/
+RealMan_Motor_Joint/
 ├── include/realman_whj/         # Public header files
 │   ├── core/                    # Protocol definitions
-│   │   ├── types.hpp            # Data structures & enums
-│   │   ├── command.hpp          # Register definitions & constants
-│   │   └── protocol.hpp         # Frame builder/parser
+│   │   ├── types.hpp            # Data structures & unit conversions
+│   │   ├── command.hpp          # Register definitions & error codes
+│   │   └── protocol.hpp         # Frame builder/parser (header-only)
 │   ├── platform/                # Platform abstraction
 │   │   ├── can_interface.hpp    # Abstract CAN interface
 │   │   ├── linux_can.hpp        # Linux SocketCAN implementation
 │   │   └── windows_can.hpp      # Windows USB-CAN implementation
-│   └── driver.hpp               # Main driver class
+│   └── driver.hpp               # Main WHJDriver class
 ├── src/                         # Source files
 │   ├── core/                    # Core implementation
 │   │   ├── driver.cpp           # Main driver implementation
-│   │   └── types.cpp            # Types implementation
+│   │   └── types.cpp            # Types & conversion functions
 │   ├── platform/                # Platform implementations
 │   │   ├── can_interface.cpp    # Interface factory
 │   │   ├── linux_can.cpp        # Linux SocketCAN
-│   │   └── windows_can.cpp      # Windows USB-CAN
+│   │   └── windows_can.cpp      # Windows USB-CAN + simulation
 │   ├── python/                  # Python bindings
 │   │   └── bindings.cpp         # pybind11 bindings
 │   └── ros2/                    # ROS2 node
 │       └── whj_driver_node.cpp  # ROS2 driver node
-├── tests/                       # Test programs
-│   ├── unit/                    # Unit tests (no hardware)
-│   │   ├── test_protocol.cpp    # Protocol tests
-│   │   └── test_types.cpp       # Type conversion tests
-│   └── hardware/                # Hardware tests
-│       └── test_basic.cpp       # Basic hardware tests
 ├── examples/                    # Example programs
 │   ├── cpp/                     # C++ examples
 │   │   ├── basic_example.cpp    # Basic usage
+│   │   ├── basic_read_example.cpp
 │   │   ├── position_control.cpp # Position control demo
 │   │   └── scan_example.cpp     # Bus scanning
-│   ├── python/                  # Python examples
-│   │   ├── basic_example.py     # Basic usage
-│   │   └── position_sine.py     # Sine wave motion
-│   └── ros2/                    # ROS2 examples
+│   └── python/                  # Python implementation
+│       ├── zlgcan_driver.py     # ZLG CAN FD driver (ctypes)
+│       ├── whj_protocol.py      # WHJ protocol implementation
+│       ├── test_whj_motor.py    # Motor test script
+│       └── tools/               # Utility scripts
+├── tests/                       # Test programs
+│   ├── unit/                    # Unit tests (no hardware)
+│   │   ├── test_protocol.cpp    # Protocol frame tests
+│   │   └── test_types.cpp       # Type conversion tests
+│   └── hardware/                # Hardware tests
+│       └── test_basic.cpp       # Basic hardware tests
 ├── config/                      # Configuration files
 │   └── driver_params.yaml       # ROS2 parameters
 ├── launch/                      # ROS2 launch files
 │   └── whj_driver.launch.py     # Driver launch file
+├── third_party/                 # Third-party libraries
+│   └── zlgcan/                  # ZLG CAN driver library
+│       ├── x64/                 # 64-bit DLLs
+│       ├── x86/                 # 32-bit DLLs
+│       └── include/             # C/C++ headers
 ├── cmake/                       # CMake configuration
 │   └── realman_whjConfig.cmake.in
-├── dual_arm-2/                  # Dual arm MoveIt2 integration
-│   ├── dual_arm_configure/      # MoveIt configuration
-│   ├── dual_arm_description/    # URDF and meshes
-│   ├── dual_arm_hardware_interface/  # ros2_control hardware interface
-│   └── dual_arm_msgs/           # Custom ROS2 messages
 ├── CMakeLists.txt               # Main CMake configuration
 ├── package.xml                  # ROS2 package manifest
-├── setup.py                     # Python package setup
-├── README.md                    # User documentation
-└── BUILD_TEST.md                # Build and test instructions
+├── setup.py                     # Python package setup (pybind11)
+├── README.md                    # User documentation (Chinese)
+├── BUILD_TEST.md                # Build and test instructions
+└── AGENTS.md                    # This file
 ```
 
 ## Build Instructions
@@ -113,7 +120,7 @@ sudo apt-get install -y python3-dev python3-pybind11
 **Windows:**
 - Visual Studio 2019 or later with C++ support
 - CMake 3.16+
-- (Optional) USB-CAN adapter drivers
+- ZCANPro installed (for zlgcan.dll)
 
 ### Build Commands
 
@@ -145,11 +152,13 @@ sudo cmake --install .
 | `BUILD_ROS2_NODE` | OFF | Build ROS2 node (requires ROS2) |
 | `BUILD_SHARED_LIBS` | ON | Build shared libraries |
 
-### Platform-Specific Notes
+### Windows Build
 
-- **Linux**: Uses SocketCAN (`can0`, `vcan0`, etc.)
-- **Windows**: Uses USB-CAN adapter (implementation-specific)
-- **Simulation**: Use `sim` as interface name for testing without hardware
+```powershell
+mkdir build && cd build
+cmake .. -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON
+cmake --build . --config Release
+```
 
 ## Testing
 
@@ -224,7 +233,7 @@ bool enableMotor(uint8_t motor_id, bool enable);
 
 - Follow PEP 8
 - Use snake_case for functions and variables
-- Module: `realman_whj`
+- Module: `realman_whj` for bindings, pure Python modules use descriptive names
 
 ## CAN Configuration (Linux)
 
@@ -285,15 +294,35 @@ ros2 launch realman_whj_driver whj_driver.launch.py \
 
 ## Python Usage
 
-### Installation
+### Pure Python (Recommended for Windows)
+
+```python
+from zlgcan_driver import ZlgCanDriver, ZCANDeviceType
+from whj_protocol import WHJProtocol, Register, WorkMode
+
+# Initialize CAN device
+driver = ZlgCanDriver()
+driver.open(ZCANDeviceType.USBCANFD_MINI, channel=0)
+driver.init_canfd(arbitration_bps=1000000, data_bps=5000000)
+
+# Build and send command
+cmd = WHJProtocol.build_read_frame(motor_id=1, reg=Register.CUR_POSITION_L, count=2)
+driver.send(can_id=1, data=cmd)
+
+# Receive response
+response = driver.receive(timeout_ms=100)
+if response:
+    state = WHJProtocol.parse_state_response(motor_id=1, data=response.data)
+    print(f"Position: {state.position_deg}°")
+
+driver.close()
+```
+
+### C++ Bindings (via pybind11)
 
 ```bash
 pip install .
-# or
-python setup.py install
 ```
-
-### Basic Example
 
 ```python
 import realman_whj as whj
@@ -343,6 +372,18 @@ driver.deinit()
 | Voltage | 0.01 V | 0-655.35 V |
 | Temperature | 0.1°C | -3276.8-3276.7°C |
 
+### Key Registers
+
+| Register | Address | Description |
+|----------|---------|-------------|
+| SYS_ENABLE_DRIVER | 0x0A | Enable driver (0/1) |
+| SYS_ERROR | 0x04 | Error code bitmap |
+| SYS_VOLTAGE | 0x05 | Voltage (0.01V/LSB) |
+| SYS_TEMP | 0x06 | Temperature (0.1°C/LSB) |
+| CUR_POSITION_L/H | 0x14/0x15 | Current position |
+| TAG_POSITION_L/H | 0x36/0x37 | Target position |
+| TAG_WORK_MODE | 0x30 | Work mode (0-3) |
+
 ### Error Codes (16-bit bitmap)
 
 - Bit 0: FOC frequency too high
@@ -384,6 +425,17 @@ sudo ip link set can0 up type can bitrate 1000000 dbitrate 5000000 fd on
 sudo usermod -aG can $USER
 ```
 
+### Windows DLL Issues
+
+```python
+# Architecture mismatch - use correct DLL
+# 64-bit Python needs x64/zlgcan.dll
+# 32-bit Python needs x86/zlgcan.dll
+
+# Manual DLL path
+driver = ZlgCanDriver(dll_path="D:/path/to/zlgcan.dll")
+```
+
 ### Build Issues
 
 ```bash
@@ -394,41 +446,18 @@ cmake .. -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON
 cmake --build .
 ```
 
-## ⚠️ Dual Arm Package (dual_arm-2/) - NOT COMPATIBLE
+### CAN Connection Issues
 
-**⚠️ WARNING: This package is NOT compatible with the standard RealMan WHJ protocol.**
+1. Check USB connection and ZCANPro can detect device
+2. Verify terminal resistance is enabled (120Ω)
+3. Confirm motor ID matches expected value
+4. Check baud rate settings (1M/5M for CAN FD)
+5. Ensure motor is powered on
 
-The `dual_arm-2` folder contains reference code downloaded from another source. Its CAN communication protocol differs significantly from the standard RealMan WHJ protocol documented at https://develop.realman-robotics.com/joints/CANFD/explanation/.
+## Reference Documentation
 
-### Key Incompatibilities
-
-| Aspect | Standard RealMan WHJ | dual_arm_hardware_interface |
-|--------|---------------------|----------------------------|
-| Control Method | Memory control table (0x30-0x37) | Special CAN ID offsets (0x200, 0x300, 0x400) |
-| Response ID | motor_id + 0x100 | motor_id + 0x500 (servo_resp) |
-| Position Command | Write registers 0x36/0x37 | CAN ID = motor_id + 0x200 |
-| Data Format | CMD(1B) + INDEX(1B) + DATA(2B) | Raw 4-byte value |
-
-### Recommendation
-
-**DO NOT USE** `dual_arm_hardware_interface` with motors running standard RealMan WHJ firmware. 
-
-Instead, use the driver implementations in this repository:
-- `src/ros2/whj_driver_node.cpp` - Standard ROS2 node
-- `src/core/driver.cpp` - Core driver library
-
-If your motors require the dual_arm protocol, you may need to:
-1. Check your motor firmware version (read register 0x03)
-2. Contact RealMan support for firmware compatibility information
-3. Consider modifying the driver to support the custom protocol (advanced)
-
-### Original Purpose (for reference only)
-
-This was intended as a ROS2 workspace for dual-arm robot control with MoveIt2:
-- `dual_arm_configure/`: MoveIt configuration files
-- `dual_arm_description/`: URDF models and STL meshes
-- `dual_arm_hardware_interface/`: ros2_control hardware interface (custom protocol)
-- `dual_arm_msgs/`: Custom ROS2 messages and services
+- [RealMan WHJ Development Docs](https://develop.realman-robotics.com/joints/CANFD/explanation/)
+- ZLG CAN Secondary Development Documentation (see `third_party/zlgcan/`)
 
 ## License
 

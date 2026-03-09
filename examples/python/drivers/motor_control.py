@@ -5,8 +5,8 @@ Complete motor control with initialization sequence
 
 import sys
 import time
-from zlgcan_driver import ZlgCanDriver, ZCANDeviceType
-from whj_protocol import WHJProtocol, Register, WorkMode, ErrorCode
+from core import ZlgCanDriver, ZCANDeviceType
+from core.protocol import WHJProtocol, Register, WorkMode, ErrorCode
 
 
 def parse_32bit_value(low, high):
@@ -20,44 +20,120 @@ def parse_32bit_value(low, high):
 class MotorController:
     """WHJ Motor Controller with proper initialization"""
     
+    # 类级别设置：是否启用 CAN FD 的 Bitrate Switching
+    # 注意：BRS=False 会导致某些设备发送失败，必须保持 True
+    USE_BRS = True
+    
     def __init__(self, driver, motor_id):
         self.driver = driver
         self.motor_id = motor_id
         self.response_id = motor_id + 0x100
     
-    def send_command(self, data, timeout_ms=500):
-        """Send command and wait for response"""
-        # Clear buffer using driver's clear_buffer method
-        self.driver.clear_buffer()
+    def send_command(self, data, timeout_ms=1500, retry_count=5):
+        """Send command and wait for response with retry
         
-        # Send
-        if not self.driver.send(can_id=self.motor_id, data=data):
-            return None, "Send failed"
-        
-        # Wait for response
-        start = time.time()
-        while (time.time() - start) * 1000 < timeout_ms:
-            frame = self.driver.receive(timeout_ms=50)
-            if frame and frame.can_id == self.response_id:
-                return frame.data, None
-            time.sleep(0.001)
+        注意: 在多设备CAN总线上，Kinco会定期发送大量数据，需要：
+        1. 更长的超时时间（1500ms）
+        2. 更多重试次数（5次）
+        3. 更快的轮询（0.5ms）
+        4. 清空旧数据再发送
+        """
+        for attempt in range(retry_count):
+            # 清空旧数据，避免处理之前的堆积帧
+            old_frames = []
+            while True:
+                frame = self.driver.receive_frame(timeout_ms=0)
+                if frame is None:
+                    break
+                old_frames.append(frame)
+            
+            # Send command
+            if not self.driver.send(can_id=self.motor_id, data=data, bitrate_switch=self.USE_BRS):
+                if attempt < retry_count - 1:
+                    time.sleep(0.05 * (attempt + 1))
+                    continue
+                return None, "Send failed"
+            
+            # Wait for response with high-frequency polling
+            start = time.time()
+            checked_frames = 0
+            
+            while (time.time() - start) * 1000 < timeout_ms:
+                # 直接接收，不先检查计数（更快）
+                frame = self.driver.receive_frame(timeout_ms=0)
+                if frame:
+                    checked_frames += 1
+                    # 只接受来自目标电机的响应
+                    if frame.can_id == self.response_id:
+                        return frame.data, None
+                    # 如果积累了太多无关帧，提前结束（总线太忙）
+                    if checked_frames > 200:  # 收到200帧还没找到，重试
+                        break
+                else:
+                    # 无数据时短暂休眠
+                    time.sleep(0.0005)  # 0.5ms
+            
+            # 超时重试
+            if attempt < retry_count - 1:
+                wait_time = 0.05 + 0.05 * attempt
+                time.sleep(wait_time)
         
         return None, "Timeout"
     
+    def iap_handshake(self, timeout_ms: int = 1000, max_retries: int = 3) -> bool:
+        """
+        IAP握手 - 必须在使能电机前完成
+        
+        在多设备CAN总线上，需要处理Kinco的干扰数据
+        """
+        iap_cmd = bytes([0x02, 0x49, 0x00])
+        expected_response_id = self.motor_id + 0x100
+        expected_data = bytes([0x02, 0x49, 0x01])
+        
+        for attempt in range(max_retries):
+            # 清空旧数据
+            while self.driver.receive_frame(timeout_ms=0):
+                pass
+            
+            # 发送
+            if not self.driver.send(can_id=self.motor_id, data=iap_cmd, bitrate_switch=self.USE_BRS):
+                time.sleep(0.05 * (attempt + 1))
+                continue
+            
+            # 等待响应
+            start = time.time()
+            checked = 0
+            
+            while (time.time() - start) * 1000 < timeout_ms:
+                frame = self.driver.receive_frame(timeout_ms=0)
+                if frame:
+                    checked += 1
+                    if frame.can_id == expected_response_id:
+                        if len(frame.data) >= 3 and frame.data[:2] == bytes([0x02, 0x49]):
+                            return True
+                    if checked > 100:  # 收到100帧还没找到，重试
+                        break
+                else:
+                    time.sleep(0.001)
+            
+            if attempt < max_retries - 1:
+                time.sleep(0.05 * (attempt + 1))
+        
+        return False
+    
     def initialize(self):
-        """
-        Initialize motor communication
-        Try reading firmware version to check if motor is online
-        """
+        """Initialize motor communication"""
         print(f"[Init] Initializing motor {self.motor_id}...")
         
-        # Try to ping motor by reading firmware version
-        print("[Init] Pinging motor...")
+        if not self.iap_handshake():
+            print("[Init] IAP handshake failed!")
+            return False
+        
         cmd = WHJProtocol.build_read_frame(self.motor_id, Register.SYS_FW_VERSION, 1)
-        resp, err = self.send_command(cmd, timeout_ms=500)
+        resp, err = self.send_command(cmd)
         
         if resp:
-            print(f"[Init] Motor is online! Response: {resp.hex()}")
+            print(f"[Init] Motor online! FW: {resp.hex()}")
             return True
         else:
             print(f"[Init] Ping failed: {err}")
@@ -156,8 +232,7 @@ class MotorController:
         resp, err = self.send_command(cmd)
         
         if resp and len(resp) >= 3:
-            success = resp[2] == 0x01
-            return success
+            return resp[2] == 0x01
         return False
     
     def clear_error(self):
@@ -167,7 +242,7 @@ class MotorController:
         return resp is not None
     
     def set_zero_position(self):
-        """Set current position as zero (for encoder multi-turn lost recovery)"""
+        """Set current position as zero"""
         cmd = WHJProtocol.build_write_frame(self.motor_id, Register.SYS_SET_ZERO_POS, 1)
         resp, err = self.send_command(cmd)
         return resp is not None
@@ -218,21 +293,14 @@ def main():
         driver.init_canfd(arbitration_bps=1000000, data_bps=5000000)
     except RuntimeError as e:
         print(f"[Error] Failed to open CAN device: {e}")
-        print("  Solutions:")
-        print("  1. Close ZCANPro or other programs using the device")
-        print("  2. Unplug and replug the USB cable")
-        print("  3. Restart your computer")
         return
     
     # Create controller
     motor = MotorController(driver, motor_id)
     
-    # Initialize (wake-up sequence)
+    # Initialize
     if not motor.initialize():
-        print("\n[Error] Failed to initialize motor. Please check:")
-        print("  - Motor is powered on")
-        print("  - CAN cable is connected")
-        print("  - Motor ID is correct")
+        print("\n[Error] Failed to initialize motor")
         driver.close()
         return
     
