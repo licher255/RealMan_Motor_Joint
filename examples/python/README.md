@@ -9,17 +9,17 @@ examples/python/
 ├── README.md                           # This file
 ├── core/                               # Core protocol modules
 │   ├── __init__.py
-│   ├── zlgcan_driver.py               # ZLG CAN FD driver
+│   ├── zlgcan_driver.py               # ZLG CAN FD driver (mixed mode support)
 │   └── protocol/
 │       ├── __init__.py
 │       ├── whj_protocol.py            # WHJ motor protocol
-│       └── kinco_protocol.py          # Kinco motor protocol (if applicable)
+│       └── kinco_protocol.py          # Kinco motor protocol
 ├── drivers/                            # Motor driver modules
 │   ├── __init__.py
-│   ├── motor_control.py               # Base motor controller
-│   ├── motion_controller.py           # Trajectory planning controller
-│   ├── whj_driver.py                  # WHJ-specific driver
-│   └── kinco_driver.py                # Kinco-specific driver
+│   ├── motor_control.py               # Base motor controller (with CAN FD filter)
+│   ├── motion_controller.py           # Trajectory planning controller (default)
+│   ├── kinco_driver.py                # Kinco-specific driver
+│   └── whj_driver.py                  # WHJ-specific driver
 ├── utils/                              # Utility modules
 │   ├── __init__.py
 │   ├── can_multiplexer.py             # CAN multiplexer
@@ -40,12 +40,11 @@ examples/python/
 │   ├── basic_whj.py                   # Basic WHJ example
 │   ├── basic_kinco.py                 # Basic Kinco example
 │   ├── dual_motor_basic.py            # Dual motor example
-│   └── interactive_control.py         # Interactive control
+│   ├── interactive_control.py         # Interactive control
+│   └── mixed_mode_demo.py             # CAN FD + Standard CAN demo
 │
-# Main motion controllers (choose based on your scenario):
-├── motion_controller.py                # [原始版本] Standard trajectory controller
-├── motion_controller_filter_switching.py  # [方案C] Hardware filter switching
-├── motion_controller_software_filter.py   # [备用方案] Software filtering
+# Main motion controller:
+├── motion_controller.py                # Trajectory controller with CAN FD filter
 │
 # Other utility scripts:
 ├── check_setup.py                      # Environment check
@@ -59,9 +58,7 @@ examples/python/
 
 ## Quick Start
 
-### 1. Standard Version (Original)
-
-Use this for single motor or clean CAN bus environments:
+### Single WHJ Motor
 
 ```bash
 python motion_controller.py <motor_id>
@@ -72,25 +69,96 @@ Example:
 python motion_controller.py 7
 ```
 
-### 2. With Kinco Interference - Hardware Filter (方案C)
-
-Use this when Kinco motors are on the same CAN bus causing interference:
+### Mixed Mode (WHJ + Kinco on Same Bus)
 
 ```bash
-python motion_controller_filter_switching.py <motor_id>
+python examples/mixed_mode_demo.py
 ```
 
-This version uses ZLG CAN hardware filters to isolate WHJ motor communication.
+## Hardware Setup
 
-### 3. With Kinco Interference - Software Filter (备用方案)
+### Terminal Resistance (120Ω)
 
-Use this when hardware filtering is not available or you need to control both Kinco and WHJ:
+| Device | Terminal Resistance | Note |
+|--------|---------------------|------|
+| ZLG USBCANFD-100U-mini | **Internal 120Ω** | Enabled via software, no external resistor needed |
+| RealMan WHJ Motor | **No resistor needed** | Internal resistance handled by driver |
+| Kinco Motor | **SW4 = OFF** | Disable internal 120Ω termination (use bus termination instead) |
 
-```bash
-python motion_controller_software_filter.py <motor_id>
+**Important**: 
+- ZLG USBCANFD-100U-mini already has internal 120Ω termination, enable it in software
+- WHJ motors do NOT need parallel resistors
+- **Kinco motors**: Set SW4 (last dial switch) to **OFF** to disable internal 120Ω termination
+- Ensure exactly two 120Ω terminations at both ends of the CAN bus
+
+### Wiring Diagram
+
+```
+ZLG CAN FD 100U-mini          WHJ Motor                   Kinco Motor
+       |                          |                            |
+    [CAN_H]--------------------[CAN_H]------------------------[CAN_H]
+       |                          |                            |
+    [CAN_L]--------------------[CAN_L]------------------------[CAN_L]
+       |                          |                            |
+    [GND]----------------------[GND]--------------------------[GND]
+       
+    Internal 120Ω              No resistor              SW4=OFF (no resistor)
+    (software enabled)                                   
 ```
 
-This version filters Kinco frames in software.
+## Key Lessons Learned: CAN FD Filter
+
+### The Problem
+
+When WHJ motors and Kinco motors share the same CAN bus:
+- Kinco motors send standard CAN frames (SDO/PDO) frequently
+- These frames flood the receive buffer
+- WHJ commands timeout because the driver processes Kinco frames instead of WHJ responses
+- Position queries take 2-3 seconds or fail completely
+
+### The Solution
+
+**Use CAN FD frame filtering** - Only receive CAN FD frames, ignore standard CAN.
+
+This is implemented in `zlgcan_driver.py` and enabled by default in `motion_controller.py`:
+
+```python
+from drivers.motion_controller import SmoothMotorController
+
+# filter_canfd_only=True is the default - filters out Kinco CAN frames
+motor = SmoothMotorController(driver, motor_id=7, filter_canfd_only=True)
+```
+
+Or use the base controller:
+
+```python
+from drivers.motor_control import MotorController
+
+motor = MotorController(driver, motor_id=7, filter_canfd_only=True)
+```
+
+### Why This Works
+
+| Frame Type | WHJ Motor | Kinco Motor |
+|------------|-----------|-------------|
+| Standard CAN | ✗ Not used | ✓ Uses extensively |
+| CAN FD | ✓ Uses exclusively | ✗ Not supported |
+
+By filtering for only CAN FD frames:
+- WHJ responses (CAN FD) are received normally
+- Kinco frames (standard CAN) are automatically ignored
+- No complex ID filtering needed
+- Hardware-level separation via frame type
+
+### Communication Protocol Differences
+
+| Aspect | WHJ Motor | Kinco Motor |
+|--------|-----------|-------------|
+| Protocol | Custom CAN FD | CANopen (standard CAN) |
+| Command ID | `0x01` - `0x7F` | `0x600` + node_id (SDO RX) |
+| Response ID | Command ID + `0x100` | `0x580` + node_id (SDO TX) |
+| Frame Type | CAN FD (up to 64 bytes) | Standard CAN (8 bytes) |
+| Bitrate Switch | Enabled (5Mbps data) | N/A |
 
 ## Common Commands
 
@@ -98,7 +166,7 @@ All motion controllers support these commands:
 
 | Command | Description |
 |---------|-------------|
-| `m <pos>` | Move to position (degrees) |
+| `m <pos>` | Move to position (degrees) with trajectory planning |
 | `e` | Enable motor |
 | `d` | Disable motor |
 | `c` | Clear errors |
@@ -108,33 +176,82 @@ All motion controllers support these commands:
 
 ## Troubleshooting
 
-### Position query timeout (2-3 seconds)
+### "Failed to get current position" / Communication Timeout
 
-**Problem**: Kinco heartbeat frames flooding the CAN bus.
+**Problem**: Kinco CAN frames interfering with WHJ communication.
 
-**Solutions**:
-1. Use `motion_controller_filter_switching.py` (hardware filter)
-2. Use `motion_controller_software_filter.py` (software filter)
-3. Check Kinco ID range in software filter matches your setup
+**Solution**: 
+- Use `motion_controller.py` (already has CAN FD filter enabled)
+- Or manually enable filter: `MotorController(driver, id, filter_canfd_only=True)`
 
-### "Failed to get current position"
+### "Failed to open CAN device"
 
-**Problem**: Motor not responding or CAN communication issue.
+**Problem**: CAN device in use by another program.
+
+**Solution**:
+```bash
+# Reset CAN device
+python tools/reset_can_device.py
+```
+
+### Position errors / Unstable movement
 
 **Check**:
-- Motor is powered on
-- CAN cable connected
-- Correct motor ID
-- No other program using the CAN device
+1. Terminal resistance properly configured (see Hardware Setup)
+2. Kinco SW4 is OFF
+3. CAN cables shielded and properly grounded
+4. No loose connections
 
-### Import errors
+### Mixed mode not working
 
-**Problem**: Module not found.
+**Problem**: WHJ works alone but fails when Kinco is connected.
 
-**Solution**: Run from the `examples/python` directory:
-```bash
-cd examples/python
-python motion_controller.py 7
+**Check**:
+1. Both motors use same arbitration bitrate (1Mbps)
+2. ZLG driver initialized with `init_mixed_mode()`
+3. WHJ using CAN FD frames, Kinco using standard CAN
+4. No duplicate CAN IDs
+
+## Code Examples
+
+### Basic WHJ Control (Filtered)
+
+```python
+from core import ZlgCanDriver, ZCANDeviceType
+from drivers.motor_control import MotorController
+
+driver = ZlgCanDriver()
+driver.open(ZCANDeviceType.USBCANFD_MINI, channel=0)
+driver.init_canfd(arbitration_bps=1000000, data_bps=5000000)
+
+# Enable CAN FD filtering
+motor = MotorController(driver, motor_id=7, filter_canfd_only=True)
+motor.initialize()
+motor.enable(True)
+motor.set_target_position(90.0)
+```
+
+### Mixed Mode (WHJ + Kinco)
+
+```python
+from core import ZlgCanDriver, ZCANDeviceType
+
+driver = ZlgCanDriver()
+driver.open(ZCANDeviceType.USBCANFD_MINI, channel=0)
+
+# Initialize mixed mode
+# 1Mbps for arbitration (both CAN and CAN FD)
+# 5Mbps for data phase (CAN FD only)
+driver.init_mixed_mode(arbitration_bps=1000000, data_bps=5000000)
+
+# Send to WHJ (CAN FD)
+driver.send_canfd(can_id=0x07, data=whj_cmd, bitrate_switch=True)
+
+# Send to Kinco (Standard CAN)
+driver.send_can(can_id=0x601, data=kinco_cmd)
+
+# Receive WHJ response only (filtered)
+frame = driver.receive(frame_type="CANFD")
 ```
 
 ## Dependencies
@@ -143,19 +260,16 @@ python motion_controller.py 7
 - ZLG CAN device (USBCANFD-100U-mini or compatible)
 - ZLG CAN driver DLL (zlgcan.dll)
 
-## Version Differences
+## Motor ID Reference
 
-| Version | File | Use Case | Pros | Cons |
-|---------|------|----------|------|------|
-| Original | `motion_controller.py` | Clean CAN bus | Simple, standard | No interference handling |
-| Hardware Filter | `motion_controller_filter_switching.py` | Kinco + WHJ | Hardware-level isolation | Requires ZLG filter support |
-| Software Filter | `motion_controller_software_filter.py` | Kinco + WHJ | No hardware dependency, flexible | Higher CPU usage |
-
-## Notes
-
-- WHJ motor ID: Default is 7 (command ID 0x007, response ID 0x107)
-- Kinco motor ID: Check your specific configuration (commonly 0x601-0x6FF)
-- CAN bitrate: 1Mbps arbitration, 5Mbps data (CAN FD)
+| Motor | Default Command ID | Response ID |
+|-------|-------------------|-------------|
+| WHJ Joint 1 | 0x01 | 0x101 |
+| WHJ Joint 2 | 0x02 | 0x102 |
+| ... | ... | ... |
+| WHJ Joint 7 | 0x07 | 0x107 |
+| Kinco (node 1) | 0x601 | 0x581 |
+| Kinco (node 2) | 0x602 | 0x582 |
 
 ## Support
 

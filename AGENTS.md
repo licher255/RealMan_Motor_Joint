@@ -318,6 +318,35 @@ if response:
 driver.close()
 ```
 
+### Mixed Mode (WHJ CAN FD + Kinco CAN)
+
+When WHJ motors share the CAN bus with Kinco motors (standard CAN), use **frame type filtering** to avoid interference:
+
+```python
+from zlgcan_driver import ZlgCanDriver, ZCANDeviceType
+
+# Initialize mixed mode
+driver = ZlgCanDriver()
+driver.open(ZCANDeviceType.USBCANFD_MINI, channel=0)
+driver.init_mixed_mode(arbitration_bps=1000000, data_bps=5000000)
+
+# Send to WHJ (CAN FD)
+driver.send_canfd(can_id=0x07, data=whj_cmd, bitrate_switch=True)
+
+# Send to Kinco (Standard CAN)
+driver.send_can(can_id=0x601, data=kinco_cmd)
+
+# Receive only CAN FD frames (filters out Kinco CAN traffic)
+frame = driver.receive(frame_type="CANFD")
+```
+
+**Key Points for Mixed Mode:**
+- WHJ uses CAN FD exclusively, Kinco uses standard CAN exclusively
+- Frame type provides natural isolation - no complex ID filtering needed
+- ZLG USBCANFD-100U-mini has internal 120Ω termination (enable in software)
+- **Kinco motors**: Set SW4=OFF to disable internal termination
+- **WHJ motors**: No additional termination resistors needed
+
 ### C++ Bindings (via pybind11)
 
 ```bash

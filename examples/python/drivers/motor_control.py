@@ -24,10 +24,22 @@ class MotorController:
     # 注意：BRS=False 会导致某些设备发送失败，必须保持 True
     USE_BRS = True
     
-    def __init__(self, driver, motor_id):
+    def __init__(self, driver, motor_id, filter_canfd_only=False):
+        """
+        Initialize motor controller
+        
+        Args:
+            driver: ZlgCanDriver instance
+            motor_id: Motor CAN ID
+            filter_canfd_only: If True, only accept CAN FD frames (filters out standard CAN/Kinco traffic)
+        """
         self.driver = driver
         self.motor_id = motor_id
         self.response_id = motor_id + 0x100
+        self.filter_canfd_only = filter_canfd_only
+        
+        if filter_canfd_only:
+            print(f"[MotorController] CAN FD filter enabled - will ignore standard CAN frames")
     
     def send_command(self, data, timeout_ms=1500, retry_count=5):
         """Send command and wait for response with retry
@@ -37,12 +49,18 @@ class MotorController:
         2. 更多重试次数（5次）
         3. 更快的轮询（0.5ms）
         4. 清空旧数据再发送
+        
+        如果 filter_canfd_only=True，将只接收CAN FD帧，自动过滤Kinco的标准CAN帧
         """
+        # 根据过滤设置选择接收模式
+        recv_type = "CANFD" if self.filter_canfd_only else "any"
+        
         for attempt in range(retry_count):
             # 清空旧数据，避免处理之前的堆积帧
+            # 注意：即使filter_canfd_only=True，清空时也清空所有类型，避免积压
             old_frames = []
             while True:
-                frame = self.driver.receive_frame(timeout_ms=0)
+                frame = self.driver.receive_frame(timeout_ms=0, frame_type="any")
                 if frame is None:
                     break
                 old_frames.append(frame)
@@ -60,7 +78,8 @@ class MotorController:
             
             while (time.time() - start) * 1000 < timeout_ms:
                 # 直接接收，不先检查计数（更快）
-                frame = self.driver.receive_frame(timeout_ms=0)
+                # 如果filter_canfd_only=True，只接收CAN FD帧，过滤掉Kinco的标准CAN帧
+                frame = self.driver.receive_frame(timeout_ms=0, frame_type=recv_type)
                 if frame:
                     checked_frames += 1
                     # 只接受来自目标电机的响应
@@ -85,14 +104,18 @@ class MotorController:
         IAP握手 - 必须在使能电机前完成
         
         在多设备CAN总线上，需要处理Kinco的干扰数据
+        如果 filter_canfd_only=True，将自动过滤Kinco的标准CAN帧
         """
         iap_cmd = bytes([0x02, 0x49, 0x00])
         expected_response_id = self.motor_id + 0x100
         expected_data = bytes([0x02, 0x49, 0x01])
         
+        # 根据过滤设置选择接收模式
+        recv_type = "CANFD" if self.filter_canfd_only else "any"
+        
         for attempt in range(max_retries):
-            # 清空旧数据
-            while self.driver.receive_frame(timeout_ms=0):
+            # 清空旧数据（清空所有类型，避免积压）
+            while self.driver.receive_frame(timeout_ms=0, frame_type="any"):
                 pass
             
             # 发送
@@ -105,7 +128,8 @@ class MotorController:
             checked = 0
             
             while (time.time() - start) * 1000 < timeout_ms:
-                frame = self.driver.receive_frame(timeout_ms=0)
+                # 如果filter_canfd_only=True，只接收CAN FD帧
+                frame = self.driver.receive_frame(timeout_ms=0, frame_type=recv_type)
                 if frame:
                     checked += 1
                     if frame.can_id == expected_response_id:

@@ -247,10 +247,24 @@ class SmoothMotorController(MotorController):
     
     Wraps the base MotorController with trapezoidal velocity profiles
     to prevent motor overheat from sudden large position changes.
+    
+    By default, filters out standard CAN frames to avoid interference from
+    Kinco motors on the same bus. Only processes CAN FD frames from WHJ motors.
     """
     
-    def __init__(self, driver, motor_id: int, profile: Optional[MotionProfile] = None):
-        super().__init__(driver, motor_id)
+    def __init__(self, driver, motor_id: int, profile: Optional[MotionProfile] = None, 
+                 filter_canfd_only: bool = True):
+        """
+        Initialize smooth motor controller
+        
+        Args:
+            driver: ZlgCanDriver instance
+            motor_id: Motor CAN ID
+            profile: Motion profile parameters
+            filter_canfd_only: If True (default), only accept CAN FD frames,
+                              filtering out standard CAN traffic from Kinco motors
+        """
+        super().__init__(driver, motor_id, filter_canfd_only=filter_canfd_only)
         self.profile = profile or MotionProfile()
         self.planner = TrapezoidalPlanner(self.profile)
         self.running = False
@@ -418,8 +432,11 @@ def main():
         max_deceleration=720.0
     )
     
-    motor = SmoothMotorController(driver, motor_id, profile)
+    # Create motor controller with CAN FD filter enabled (default)
+    # This filters out standard CAN frames from Kinco motors
+    motor = SmoothMotorController(driver, motor_id, profile, filter_canfd_only=True)
     global_motor = motor
+    print("[Info] CAN FD filter enabled - ignoring standard CAN traffic from Kinco motors")
     
     # Initialize
     if not motor.initialize():
