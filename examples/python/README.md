@@ -1,269 +1,255 @@
-# RealMan WHJ Motor Control - Python Examples
+# RealMan Motor Joint - Python Driver
 
-This directory contains Python examples for controlling RealMan WHJ series joint motors via CAN FD.
+Python 驱动库，用于控制 RealMan WHJ 系列关节电机和 Kinco 伺服电机（通过 CAN 总线）。
 
-## Directory Structure
+## 目录结构
 
 ```
 examples/python/
-├── README.md                           # This file
-├── core/                               # Core protocol modules
+├── README.md                    # 本文档
+├── core/                        # 核心模块
 │   ├── __init__.py
-│   ├── zlgcan_driver.py               # ZLG CAN FD driver (mixed mode support)
-│   └── protocol/
+│   ├── zlgcan_driver.py        # ZLG CAN FD 设备驱动
+│   └── protocol/               # 通信协议
 │       ├── __init__.py
-│       ├── whj_protocol.py            # WHJ motor protocol
-│       └── kinco_protocol.py          # Kinco motor protocol
-├── drivers/                            # Motor driver modules
+│       ├── whj_protocol.py     # RealMan WHJ 电机协议 (CAN FD)
+│       ├── kinco_protocol.py   # Kinco 基础协议 (RPDO/TPDO方式)
+│       └── kinco_canopen.py    # Kinco CANopen SDO 协议
+├── drivers/                     # 电机驱动模块
 │   ├── __init__.py
-│   ├── motor_control.py               # Base motor controller (with CAN FD filter)
-│   ├── motion_controller.py           # Trajectory planning controller (default)
-│   ├── kinco_driver.py                # Kinco-specific driver
-│   └── whj_driver.py                  # WHJ-specific driver
-├── utils/                              # Utility modules
-│   ├── __init__.py
-│   ├── can_multiplexer.py             # CAN multiplexer
-│   └── dual_motor_manager.py          # Dual motor coordination
-├── tools/                              # Tool scripts
-│   ├── debug_can.py                   # CAN debugging tool
-│   ├── position_sine.py               # Sine wave position test
-│   ├── reset_can_device.py            # Reset CAN device
-│   ├── simple_position_control.py     # Simple position control
-│   └── test_whj_motor.py              # Motor test script
-├── tests/                              # Test scripts
-│   ├── __init__.py
-│   ├── test_whj.py
-│   ├── test_kinco.py
-│   └── test_dual.py
-├── examples/                           # Simple examples
-│   ├── __init__.py
-│   ├── basic_whj.py                   # Basic WHJ example
-│   ├── basic_kinco.py                 # Basic Kinco example
-│   ├── dual_motor_basic.py            # Dual motor example
-│   ├── interactive_control.py         # Interactive control
-│   └── mixed_mode_demo.py             # CAN FD + Standard CAN demo
-│
-# Main motion controller:
-├── motion_controller.py                # Trajectory controller with CAN FD filter
-│
-# Other utility scripts:
-├── check_setup.py                      # Environment check
-├── query_motor_state.py                # Query motor state
-├── encoder_recovery.py                 # Encoder recovery
-├── dual_motor_control.py               # Dual motor control
-├── dual_motor_switchable.py            # Switchable dual motor control
-└── main.py                             # Main entry point
-
+│   ├── base_driver.py          # 基础驱动抽象类
+│   ├── whj_motor_control.py    # WHJ 基础电机控制
+│   ├── whj_motion_controller.py # WHJ 轨迹规划控制器 (推荐)
+│   ├── whj_driver.py           # WHJ 专用驱动
+│   ├── kinco_driver.py         # Kinco 驱动 (RPDO/TPDO方式)
+│   └── kinco_pdo_driver.py     # Kinco SDO 驱动 (推荐)
+├── test_kinco_simple.py        # Kinco 基础测试
+└── test_kinco_pdo.py           # Kinco SDO 功能测试
 ```
 
-## Quick Start
+## 快速开始
 
-### Single WHJ Motor
+### WHJ 电机控制（带轨迹规划）
 
 ```bash
-python motion_controller.py <motor_id>
+python -m drivers.whj_motion_controller <motor_id>
 ```
 
-Example:
+示例：
 ```bash
-python motion_controller.py 7
+python -m drivers.whj_motion_controller 7
 ```
 
-### Mixed Mode (WHJ + Kinco on Same Bus)
+交互命令：
+| 命令 | 说明 |
+|------|------|
+| `m <pos>` | 移动到指定位置（度） |
+| `e` | 使能电机 |
+| `d` | 禁用电机 |
+| `c` | 清除错误 |
+| `r` | 读取当前位置 |
+| `s` | 显示状态 |
+| `q` | 退出 |
 
-```bash
-python examples/mixed_mode_demo.py
-```
-
-## Hardware Setup
-
-### Terminal Resistance (120Ω)
-
-| Device | Terminal Resistance | Note |
-|--------|---------------------|------|
-| ZLG USBCANFD-100U-mini | **Internal 120Ω** | Enabled via software, no external resistor needed |
-| RealMan WHJ Motor | **No resistor needed** | Internal resistance handled by driver |
-| Kinco Motor | **SW4 = OFF** | Disable internal 120Ω termination (use bus termination instead) |
-
-**Important**: 
-- ZLG USBCANFD-100U-mini already has internal 120Ω termination, enable it in software
-- WHJ motors do NOT need parallel resistors
-- **Kinco motors**: Set SW4 (last dial switch) to **OFF** to disable internal 120Ω termination
-- Ensure exactly two 120Ω terminations at both ends of the CAN bus
-
-### Wiring Diagram
-
-```
-ZLG CAN FD 100U-mini          WHJ Motor                   Kinco Motor
-       |                          |                            |
-    [CAN_H]--------------------[CAN_H]------------------------[CAN_H]
-       |                          |                            |
-    [CAN_L]--------------------[CAN_L]------------------------[CAN_L]
-       |                          |                            |
-    [GND]----------------------[GND]--------------------------[GND]
-       
-    Internal 120Ω              No resistor              SW4=OFF (no resistor)
-    (software enabled)                                   
-```
-
-## Key Lessons Learned: CAN FD Filter
-
-### The Problem
-
-When WHJ motors and Kinco motors share the same CAN bus:
-- Kinco motors send standard CAN frames (SDO/PDO) frequently
-- These frames flood the receive buffer
-- WHJ commands timeout because the driver processes Kinco frames instead of WHJ responses
-- Position queries take 2-3 seconds or fail completely
-
-### The Solution
-
-**Use CAN FD frame filtering** - Only receive CAN FD frames, ignore standard CAN.
-
-This is implemented in `zlgcan_driver.py` and enabled by default in `motion_controller.py`:
-
-```python
-from drivers.motion_controller import SmoothMotorController
-
-# filter_canfd_only=True is the default - filters out Kinco CAN frames
-motor = SmoothMotorController(driver, motor_id=7, filter_canfd_only=True)
-```
-
-Or use the base controller:
-
-```python
-from drivers.motor_control import MotorController
-
-motor = MotorController(driver, motor_id=7, filter_canfd_only=True)
-```
-
-### Why This Works
-
-| Frame Type | WHJ Motor | Kinco Motor |
-|------------|-----------|-------------|
-| Standard CAN | ✗ Not used | ✓ Uses extensively |
-| CAN FD | ✓ Uses exclusively | ✗ Not supported |
-
-By filtering for only CAN FD frames:
-- WHJ responses (CAN FD) are received normally
-- Kinco frames (standard CAN) are automatically ignored
-- No complex ID filtering needed
-- Hardware-level separation via frame type
-
-### Communication Protocol Differences
-
-| Aspect | WHJ Motor | Kinco Motor |
-|--------|-----------|-------------|
-| Protocol | Custom CAN FD | CANopen (standard CAN) |
-| Command ID | `0x01` - `0x7F` | `0x600` + node_id (SDO RX) |
-| Response ID | Command ID + `0x100` | `0x580` + node_id (SDO TX) |
-| Frame Type | CAN FD (up to 64 bytes) | Standard CAN (8 bytes) |
-| Bitrate Switch | Enabled (5Mbps data) | N/A |
-
-## Common Commands
-
-All motion controllers support these commands:
-
-| Command | Description |
-|---------|-------------|
-| `m <pos>` | Move to position (degrees) with trajectory planning |
-| `e` | Enable motor |
-| `d` | Disable motor |
-| `c` | Clear errors |
-| `r` | Read current position |
-| `s` | Show status |
-| `q` | Quit |
-
-## Troubleshooting
-
-### "Failed to get current position" / Communication Timeout
-
-**Problem**: Kinco CAN frames interfering with WHJ communication.
-
-**Solution**: 
-- Use `motion_controller.py` (already has CAN FD filter enabled)
-- Or manually enable filter: `MotorController(driver, id, filter_canfd_only=True)`
-
-### "Failed to open CAN device"
-
-**Problem**: CAN device in use by another program.
-
-**Solution**:
-```bash
-# Reset CAN device
-python tools/reset_can_device.py
-```
-
-### Position errors / Unstable movement
-
-**Check**:
-1. Terminal resistance properly configured (see Hardware Setup)
-2. Kinco SW4 is OFF
-3. CAN cables shielded and properly grounded
-4. No loose connections
-
-### Mixed mode not working
-
-**Problem**: WHJ works alone but fails when Kinco is connected.
-
-**Check**:
-1. Both motors use same arbitration bitrate (1Mbps)
-2. ZLG driver initialized with `init_mixed_mode()`
-3. WHJ using CAN FD frames, Kinco using standard CAN
-4. No duplicate CAN IDs
-
-## Code Examples
-
-### Basic WHJ Control (Filtered)
+### Python API 使用
 
 ```python
 from core import ZlgCanDriver, ZCANDeviceType
-from drivers.motor_control import MotorController
+from drivers import SmoothMotorController, MotionProfile
+
+# 初始化 CAN 设备
+driver = ZlgCanDriver()
+driver.open(ZCANDeviceType.USBCANFD_MINI, channel=0)
+driver.init_canfd(arbitration_bps=1000000, data_bps=5000000)
+
+# 创建运动控制器（带 CAN FD 过滤，自动忽略 Kinco 标准 CAN 帧）
+profile = MotionProfile(
+    max_velocity=1800.0,      # 最大速度 °/s
+    max_acceleration=720.0,   # 最大加速度 °/s²
+    max_deceleration=720.0    # 最大减速度 °/s²
+)
+motor = SmoothMotorController(driver, motor_id=7, profile=profile)
+
+# 初始化并控制
+motor.initialize()
+motor.enable(True)
+motor.move_to_position(90.0)  # 平滑移动到 90°
+```
+
+### Kinco 电机控制 (PDO 方式 - 推荐)
+
+```python
+from core import ZlgCanDriver, ZCANDeviceType
+from drivers import KincoPDODriver
 
 driver = ZlgCanDriver()
 driver.open(ZCANDeviceType.USBCANFD_MINI, channel=0)
 driver.init_canfd(arbitration_bps=1000000, data_bps=5000000)
 
-# Enable CAN FD filtering
-motor = MotorController(driver, motor_id=7, filter_canfd_only=True)
-motor.initialize()
-motor.enable(True)
-motor.set_target_position(90.0)
+# 创建 PDO 驱动 (按照操作指南)
+motor = KincoPDODriver(driver, node_id=1)
+
+# 初始化
+motor.initialize()  # NMT启动 + 使能 + 绝对位置模式
+
+# 移动到 90 度 @ 50 rpm
+motor.move_to_degree(90.0, velocity_rpm=50.0)
+
+# 读取状态
+motor.poll_state(duration=0.5)
+motor.print_state()
+
+# 设置原点
+motor.set_origin()
+
+# 禁用
+motor.disable()
 ```
 
-### Mixed Mode (WHJ + Kinco)
+### Kinco 电机控制 (SDO 方式)
 
 ```python
 from core import ZlgCanDriver, ZCANDeviceType
+from drivers import KincoSDODriver
 
 driver = ZlgCanDriver()
 driver.open(ZCANDeviceType.USBCANFD_MINI, channel=0)
+driver.init_canfd(arbitration_bps=1000000, data_bps=5000000)
 
-# Initialize mixed mode
-# 1Mbps for arbitration (both CAN and CAN FD)
-# 5Mbps for data phase (CAN FD only)
-driver.init_mixed_mode(arbitration_bps=1000000, data_bps=5000000)
-
-# Send to WHJ (CAN FD)
-driver.send_canfd(can_id=0x07, data=whj_cmd, bitrate_switch=True)
-
-# Send to Kinco (Standard CAN)
-driver.send_can(can_id=0x601, data=kinco_cmd)
-
-# Receive WHJ response only (filtered)
-frame = driver.receive(frame_type="CANFD")
+# 创建 SDO 驱动 (基于 Kinco FD1X5 手册第7章)
+motor = KincoSDODriver(driver, node_id=1)
+motor.initialize()
+motor.move_to_degree(90.0, wait_complete=True)
+motor.print_status()
 ```
 
-## Dependencies
+## 硬件接线
+
+### 终端电阻配置
+
+| 设备 | 终端电阻 | 说明 |
+|------|----------|------|
+| ZLG USBCANFD-100U-mini | 内置 120Ω | 软件启用，无需外接 |
+| RealMan WHJ 电机 | 无需额外电阻 | 驱动内部处理 |
+| Kinco 电机 | SW4 = OFF | 禁用内部 120Ω 终端电阻 |
+
+**重要**：CAN 总线两端必须有且仅有 2 个 120Ω 终端电阻。
+
+### 接线图
+
+```
+ZLG CAN FD 100U-mini      WHJ Motor              Kinco Motor
+       |                      |                        |
+    [CAN_H]----------------[CAN_H]------------------[CAN_H]
+       |                      |                        |
+    [CAN_L]----------------[CAN_L]------------------[CAN_L]
+       |                      |                        |
+    [GND]------------------[GND]--------------------[GND]
+       
+   内置 120Ω                无电阻              SW4=OFF (无电阻)
+   (软件启用)
+```
+
+## CAN FD 过滤（混合模式关键）
+
+当 WHJ (CAN FD) 和 Kinco (标准 CAN) 共用总线时：
+
+**问题**：Kinco 频繁发送标准 CAN 帧，会淹没接收缓冲区，导致 WHJ 命令超时。
+
+**解决方案**：使用 CAN FD 帧过滤，只接收 CAN FD 帧，自动忽略标准 CAN 帧。
+
+```python
+# 默认启用 CAN FD 过滤
+motor = SmoothMotorController(driver, motor_id=7, filter_canfd_only=True)
+```
+
+| 帧类型 | WHJ 电机 | Kinco 电机 |
+|--------|----------|------------|
+| 标准 CAN | ✗ 不使用 | ✓ 大量使用 |
+| CAN FD | ✓ 专用 | ✗ 不支持 |
+
+## 通信协议差异
+
+| 特性 | WHJ 电机 | Kinco 电机 |
+|------|----------|------------|
+| 协议 | 自定义 CAN FD | CANopen (标准 CAN) |
+| 命令 ID | 0x01 - 0x7F | 0x600 + node_id |
+| 响应 ID | 命令 ID + 0x100 | 0x580 + node_id |
+| 帧类型 | CAN FD (64 字节) | 标准 CAN (8 字节) |
+| 数据波特率 | 5 Mbps | 1 Mbps |
+
+## 模块说明
+
+### core.zlgcan_driver
+ZLG CAN 设备驱动，支持：
+- CAN FD 模式（WHJ）
+- 标准 CAN 模式（Kinco）
+- 混合模式（同时支持 CAN FD + 标准 CAN）
+- 帧类型过滤
+
+### core.protocol.whj_protocol
+WHJ 电机通信协议实现：
+- 寄存器定义
+- 命令构建/解析
+- 状态转换
+
+### core.protocol.kinco_canopen
+Kinco CANopen SDO 协议实现（基于 FD1X5 手册第7章）：
+- SDO 读写操作 (0x600/0x580)
+- 控制字/状态字 (0x6040/0x6041)
+- 错误读取和清除 (0x2601)
+- 限位状态读取 (0x60FD)
+
+### core.protocol.kinco_protocol
+Kinco 基础协议实现（RPDO/TPDO 方式）
+
+### drivers.whj_motion_controller
+主运动控制器，功能：
+- 梯形速度轨迹规划
+- 平滑运动控制
+- CAN FD 帧过滤
+- 自动超时计算
+
+### drivers.kinco_pdo_driver
+**Kinco PDO 驱动（推荐 - 符合操作指南）**
+
+| 功能 | 方法 | CAN ID | 数据格式 |
+|------|------|--------|----------|
+| NMT 启动 | `start_node()` | 0x000 | [01, node_id] |
+| 使能+绝对模式 | `enable_absolute_mode()` | 0x201 | [01 3F 10 ...] |
+| 使能+相对模式 | `enable_relative_mode()` | 0x201 | [01 3F 0F ...] |
+| 禁用 | `disable()` | 0x201 | [01 06 10 ...] |
+| 清除错误 | `clear_fault()` | 0x201 | [01 86 10 ...] |
+| 设置原点 | `set_origin()` | 0x201 | [06 0F/1F ...] |
+| 移动位置 | `move_to_degree(deg, rpm)` | 0x301 | [pos(4) + vel(4)] |
+| 读取状态 | `poll_state()` | 0x181+id | TPDO1 |
+
+### drivers.kinco_sdo_driver
+**Kinco SDO 驱动（完整功能）**
+
+| 功能 | 方法 | SDO 对象 |
+|------|------|----------|
+| 读实际位置 | `read_actual_position()` | 0x60630020 |
+| 读实际速度 | `read_actual_velocity()` | 0x606C0020 |
+| 读错误状态 | `read_error_status()` | 0x26010010 |
+| 读限位状态 | `read_input_status()` | 0x60FD0020 |
+| 清除错误 | `clear_fault()` | 0x60400010 |
+| 使能/禁用 | `enable()` / `disable()` | 0x60400010 |
+| 设置工作模式 | `set_work_mode(1)` | 0x60600008 |
+
+### drivers.kinco_driver
+Kinco 基础驱动（旧版 RPDO 方式）
+
+## 依赖
 
 - Python 3.8+
-- ZLG CAN device (USBCANFD-100U-mini or compatible)
-- ZLG CAN driver DLL (zlgcan.dll)
+- ZLG CAN 设备 (USBCANFD-100U-mini 或兼容设备)
+- ZLG CAN 驱动 DLL (zlgcan.dll)
 
-## Motor ID Reference
+## 电机 ID 参考
 
-| Motor | Default Command ID | Response ID |
-|-------|-------------------|-------------|
+| 电机 | 命令 ID | 响应 ID |
+|------|---------|---------|
 | WHJ Joint 1 | 0x01 | 0x101 |
 | WHJ Joint 2 | 0x02 | 0x102 |
 | ... | ... | ... |
@@ -271,6 +257,7 @@ frame = driver.receive(frame_type="CANFD")
 | Kinco (node 1) | 0x601 | 0x581 |
 | Kinco (node 2) | 0x602 | 0x582 |
 
-## Support
+## 更多信息
 
-For more information, see the project-level README.md and AGENTS.md.
+- 项目 README: ../../README.md
+- Agent 指南: ../../AGENTS.md

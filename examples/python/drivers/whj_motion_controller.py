@@ -23,6 +23,14 @@ RealMan WHJ Motion Controller - ORIGINAL VERSION (原始版本)
 - core/protocol/whj_protocol.py
 - drivers/motor_control.py
 
+运行方式:
+  cd examples/python
+  python drivers/motion_controller.py <motor_id>
+  
+  或直接运行（从drivers目录）:
+  cd examples/python/drivers
+  python motion_controller.py <motor_id>
+
 使用方法:
     python motion_controller.py <motor_id>
 
@@ -35,13 +43,6 @@ RealMan WHJ Motion Controller - ORIGINAL VERSION (原始版本)
     s        - 显示状态
     q        - 退出
 
-注意:
-- 此版本为标准版本，无 Kinco 干扰处理
-- 如果 CAN 总线上有 Kinco 电机，请使用:
-  * motion_controller_filter_switching.py (硬件滤波方案)
-  * motion_controller_software_filter.py (软件滤波方案)
-
-作者: Auto-generated
 日期: 2026-03-09
 ================================================================================
 """
@@ -51,12 +52,21 @@ import time
 import math
 import atexit
 from typing import Optional, Callable
+import sys
+import os
+
+# 添加项目根目录到路径（支持从drivers目录或parent目录运行）
+# 获取当前文件所在目录，然后找到项目根目录
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_project_root = os.path.join(_current_dir, '..')
+sys.path.insert(0, os.path.abspath(_project_root))
+
 from dataclasses import dataclass
 from enum import Enum
 
 from core import ZlgCanDriver, ZCANDeviceType
 from core.protocol import WHJProtocol, Register, WorkMode
-from drivers.motor_control import MotorController, parse_32bit_value
+from drivers.whj_motor_control import WHJMotorController, parse_32bit_value
 
 
 # Global variables for cleanup
@@ -284,11 +294,11 @@ class TrapezoidalPlanner:
         return self.state == TrajectoryState.FINISHED
 
 
-class SmoothMotorController(MotorController):
+class WHJMotionController(WHJMotorController):
     """
     Motor controller with smooth trajectory planning
     
-    Wraps the base MotorController with trapezoidal velocity profiles
+    Wraps the base WHJMotorController with trapezoidal velocity profiles
     to prevent motor overheat from sudden large position changes.
     """
     
@@ -436,7 +446,7 @@ def main():
     motor_id = int(sys.argv[1]) if len(sys.argv) > 1 else 7
     
     print("=" * 70)
-    print("RealMan WHJ Motion Controller with Trajectory Planning")
+    print("RealMan WHJ Motion Controller (WHJMotionController)")
     print("=" * 70)
     print(f"Motor ID: {motor_id}")
     print()
@@ -461,7 +471,7 @@ def main():
         max_deceleration=720.0
     )
     
-    motor = SmoothMotorController(driver, motor_id, profile)
+    motor = WHJMotionController(driver, motor_id, profile)
     global_motor = motor
     
     # Initialize

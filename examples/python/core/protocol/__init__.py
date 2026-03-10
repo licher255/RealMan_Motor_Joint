@@ -5,7 +5,7 @@ Motor Communication Protocols
 
 Protocols:
     WHJ: RealMan WHJ关节电机 (CAN FD)
-    Kinco: Kinco伺服电机 (标准CAN)
+    Kinco: Kinco旋转舵盘电机 (标准CAN, PDO方式)
 """
 
 from .whj_protocol import (
@@ -29,7 +29,7 @@ from .kinco_protocol import (
 )
 
 __all__ = [
-    # WHJ Protocol
+    # WHJ Protocol (RealMan WHJ关节电机 - CAN FD)
     'WHJProtocol',
     'Register',
     'WorkMode',
@@ -40,7 +40,7 @@ __all__ = [
     'CMD_READ',
     'CMD_WRITE',
     'RESPONSE_ID_OFFSET',
-    # Kinco Protocol
+    # Kinco Protocol (Kinco旋转舵盘电机 - 标准CAN)
     'KincoProtocol',
     'KincoMode',
     'KincoState',

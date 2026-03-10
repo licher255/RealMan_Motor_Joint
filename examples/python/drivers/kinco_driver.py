@@ -25,6 +25,11 @@ Example:
     can_driver.close()
 """
 
+import sys
+import os
+# 添加父目录到路径，以便导入 core 模块
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
 import time
 from typing import Optional
 
@@ -33,7 +38,7 @@ from core.protocol import (
     KincoProtocol, KincoMode, KincoState,
     KincoNMTCommand
 )
-from .base_driver import BaseMotorDriver, MotorState
+from drivers.base_driver import BaseMotorDriver, MotorState
 
 
 class KincoDriver(BaseMotorDriver):
@@ -135,13 +140,13 @@ class KincoDriver(BaseMotorDriver):
     
     def set_absolute_position_mode(self) -> bool:
         """
-        设置为绝对位置模式
+        设置为绝对位置模式 (0x01 0x3F 0x10)
         
         Returns:
             True if successful
         """
         data = KincoProtocol.build_set_absolute_mode()
-        success = self._send_frame(KincoProtocol.SET_MODE_ID, data)
+        success = self._send_frame(KincoProtocol.CONTROL_ID, data)
         
         if success:
             self._current_mode = KincoMode.ABSOLUTE_POSITION
@@ -158,11 +163,30 @@ class KincoDriver(BaseMotorDriver):
             True if successful
         """
         data = KincoProtocol.build_set_relative_mode()
-        success = self._send_frame(KincoProtocol.SET_MODE_ID, data)
+        success = self._send_frame(KincoProtocol.CONTROL_ID, data)
         
         if success:
             self._current_mode = KincoMode.RELATIVE_POSITION
             print(f"[Kinco-{self.motor_id}] Relative position mode")
+            time.sleep(0.05)
+        
+        return success
+    
+    def set_homing_mode(self) -> bool:
+        """
+        设置为原点设置模式 (模式6)
+        
+        Returns:
+            True if successful
+        """
+        data = KincoProtocol.build_control_word_frame(
+            0x06, KincoProtocol.CONTROL_ENABLE, KincoMode.HOMING_MODE
+        )
+        success = self._send_frame(KincoProtocol.CONTROL_ID, data)
+        
+        if success:
+            self._current_mode = KincoMode.HOMING_MODE
+            print(f"[Kinco-{self.motor_id}] Homing mode")
             time.sleep(0.05)
         
         return success
@@ -270,6 +294,45 @@ class KincoDriver(BaseMotorDriver):
         """
         return self.set_position(0.0, velocity=30.0)
     
+    def set_origin(self) -> bool:
+        """
+        设置当前位置为原点 (按照操作指南流程)
+        
+        流程:
+        1) 0x201, [06 0F 00 00 00 00 00 00] - 控制模式6, 控制字0F
+        2) 0x201, [06 1F 00 00 00 00 00 00] - 控制字1F
+        3) 0x201, [01 3F 10 00 00 00 00 00] - 切换回绝对位置模式
+        
+        Returns:
+            True if successful
+        """
+        print(f"\n[Kinco-{self.motor_id}] Setting origin...")
+        
+        # Step 1: 控制模式6, 控制字0F
+        step1 = KincoProtocol.build_homing_step1()
+        if not self._send_frame(KincoProtocol.CONTROL_ID, step1):
+            print(f"[Kinco-{self.motor_id}] Homing step 1 failed")
+            return False
+        print(f"[Kinco-{self.motor_id}] Homing step 1: Mode 6, Control 0x0F")
+        time.sleep(0.1)
+        
+        # Step 2: 控制字1F
+        step2 = KincoProtocol.build_homing_step2()
+        if not self._send_frame(KincoProtocol.CONTROL_ID, step2):
+            print(f"[Kinco-{self.motor_id}] Homing step 2 failed")
+            return False
+        print(f"[Kinco-{self.motor_id}] Homing step 2: Control 0x1F")
+        time.sleep(0.1)
+        
+        # Step 3: 切换回绝对位置模式
+        if not self.set_absolute_position_mode():
+            print(f"[Kinco-{self.motor_id}] Homing step 3 failed")
+            return False
+        print(f"[Kinco-{self.motor_id}] Homing step 3: Back to absolute mode")
+        
+        print(f"[Kinco-{self.motor_id}] Origin set successfully!")
+        return True
+    
     # ========================================================================
     # State & Status
     # ========================================================================
@@ -361,22 +424,27 @@ class KincoDriver(BaseMotorDriver):
     
     def initialize(self) -> bool:
         """
-        完整初始化流程
+        完整初始化流程 (按照操作指南)
+        
+        流程:
+        1) 0x000, [01 00] - 启动节点
+        2) 0x201, [01 3F 10 00 00 00 00 00] - 上使能, 绝对位置模式
         
         Returns:
             True if successful
         """
         print(f"\n[Kinco-{self.motor_id}] Initializing...")
         
-        # 启动节点
+        # 步骤1: 启动节点
         if not self.start_node():
             return False
         
-        # 设置绝对位置模式
+        # 步骤2: 上使能, 设置为绝对位置模式
         if not self.set_absolute_position_mode():
             return False
         
         print(f"[Kinco-{self.motor_id}] Initialization complete")
+        print(f"[Kinco-{self.motor_id}] Ready for position control (0x301)")
         return True
     
     # ========================================================================

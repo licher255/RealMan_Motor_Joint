@@ -1,20 +1,22 @@
 """
-Kinco Rotary Servo Motor Protocol
+Kinco Rotary Servo Motor Protocol (蓝莓项目)
 
-Kinco旋转舵盘电机通信协议实现。
+电机型号: FD135驱动器 + Q6电机
+通信模式: CAN标准帧 2.0A
+波特率: 1Mbps
 
 Protocol Specifications:
 - CAN ID Format:
   - NMT Command: 0x000
-  - Set Mode: 0x201
+  - Control Word/Mode: 0x201
   - Position Control: 0x301
-  - Speed Control: 0x401 (optional)
   - TPDO1 Feedback: 0x180 + NodeID
-  - TPDO2 Feedback: 0x280 + NodeID
   
-- Data Format (Little-endian):
-  - Position: 0.01 degrees/LSB (int32)
-  - Speed: 1 RPM/LSB (uint16)
+- Data Format:
+  - Position: 角度 × 16384 (减速比), 有符号32位, 小端
+  - Speed: RPM × (65536×512/1875), 无符号32位, 小端
+
+参考: 蓝莓项目旋转电机操作指南
 """
 
 import struct
@@ -28,6 +30,7 @@ class KincoMode(IntEnum):
     RELATIVE_POSITION = 0x0F  # 相对位置模式
     ABSOLUTE_POSITION = 0x10  # 绝对位置模式
     SPEED_MODE = 0x03         # 速度模式
+    HOMING_MODE = 0x06        # 原点设置模式 (控制模式6)
 
 
 class KincoNMTCommand(IntEnum):
@@ -78,22 +81,31 @@ class KincoConfig:
 
 class KincoProtocol:
     """
-    Kinco协议实现类
+    Kinco协议实现类 (蓝莓项目专用)
     
     提供帧构建和解析功能。
     """
     
     # CAN ID定义
     NMT_ID = 0x000          # NMT命令
-    SET_MODE_ID = 0x201     # 设置工作模式
+    CONTROL_ID = 0x201      # 控制字/模式设置
     POSITION_CTRL_ID = 0x301  # 位置控制
-    SPEED_CTRL_ID = 0x401     # 速度控制 (备用)
     
-    # TPDO反馈ID (0x180 + NodeID, 0x280 + NodeID, etc.)
-    TPDO1_BASE = 0x180
-    TPDO2_BASE = 0x280
-    TPDO3_BASE = 0x380
-    TPDO4_BASE = 0x480
+    # TPDO反馈ID
+    TPDO1_BASE = 0x180      # 状态反馈
+    
+    # 机械参数
+    # 根据操作指南: 90度 = 0x00168000 = 1474560 inc
+    # 减速比 = 1474560 / 90 = 16384 = 2^14 (每转脉冲数)
+    GEAR_RATIO = 16384
+    
+    # 速度转换因子: 1 RPM = 65536 * 512 / 1875 ≈ 17895.7
+    RPM_TO_UNITS = (65536 * 512) / 1875
+    
+    # 控制字
+    CONTROL_ENABLE = 0x3F   # 使能控制字 (高位)
+    CONTROL_HOME_1 = 0x0F   # 设置原点步骤1
+    CONTROL_HOME_2 = 0x1F   # 设置原点步骤2
     
     @staticmethod
     def build_nmt_frame(node_id: int, command: KincoNMTCommand) -> bytes:
@@ -125,17 +137,34 @@ class KincoProtocol:
         return KincoProtocol.build_nmt_frame(node_id, KincoNMTCommand.RESET_NODE)
     
     @staticmethod
+    def build_control_word_frame(control_low: int, control_high: int, mode: int) -> bytes:
+        """
+        构建控制字帧 (0x201)
+        
+        格式: [control_low, control_high, mode, 0, 0, 0, 0, 0]
+        
+        Args:
+            control_low: 控制字低位
+            control_high: 控制字高位
+            mode: 工作模式
+        
+        Returns:
+            8字节数据
+        """
+        return bytes([control_low, control_high, mode, 0x00, 0x00, 0x00, 0x00, 0x00])
+    
+    @staticmethod
     def build_set_mode_frame(mode: KincoMode) -> bytes:
         """
-        构建设置工作模式帧
+        构建设置工作模式帧 (使用默认使能控制字)
         
         Args:
             mode: 工作模式
         
         Returns:
-            8字节数据: [0x3F, mode, 0, 0, 0, 0, 0, 0]
+            8字节数据: [0x01, 0x3F, mode, 0, 0, 0, 0, 0]
         """
-        return bytes([0x3F, mode, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+        return KincoProtocol.build_control_word_frame(0x01, KincoProtocol.CONTROL_ENABLE, mode)
     
     @staticmethod
     def build_set_absolute_mode() -> bytes:
@@ -150,29 +179,28 @@ class KincoProtocol:
     @staticmethod
     def build_position_frame(position_deg: float, speed_rpm: float = 50.0) -> bytes:
         """
-        构建位置控制帧
+        构建位置控制帧 (0x301)
         
-        Data Format (8 bytes):
-        - Byte 0-3: Target position (int32, little-endian, 0.01 deg/LSB)
-        - Byte 4-5: Target speed (uint16, little-endian, 1 RPM/LSB)
-        - Byte 6-7: Reserved (0)
+        Data Format (8 bytes, Little-endian):
+        - Byte 0-3: Target position (int32) = 角度 × 182 × 90
+        - Byte 4-7: Target speed (uint32) = RPM × (65536×512/1875)
         
         Args:
-            position_deg: 目标位置 (度)
+            position_deg: 目标位置 (度, 正=逆时针, 负=顺时针)
             speed_rpm: 目标速度 (RPM)
         
         Returns:
             8字节数据
         """
-        # 位置转换为0.01度单位
-        position_units = int(position_deg * 100)
-        # 速度转换为RPM单位
-        speed_units = int(speed_rpm)
+        # 位置转换: 角度 × 减速比
+        position_units = int(position_deg * KincoProtocol.GEAR_RATIO)
         
-        # 构建数据: int32 (little-endian) + uint16 (little-endian) + 2 bytes padding
-        data = struct.pack('<i', position_units)  # 4 bytes position
-        data += struct.pack('<H', speed_units)     # 2 bytes speed
-        data += bytes([0x00, 0x00])                # 2 bytes padding
+        # 速度转换: RPM × 转换因子
+        speed_units = int(speed_rpm * KincoProtocol.RPM_TO_UNITS)
+        
+        # 构建数据: int32 (position) + uint32 (speed)
+        data = struct.pack('<i', position_units)   # 4 bytes position
+        data += struct.pack('<I', speed_units)     # 4 bytes speed
         
         return data
     
@@ -189,6 +217,28 @@ class KincoProtocol:
             8字节数据
         """
         return KincoProtocol.build_position_frame(delta_deg, speed_rpm)
+    
+    # ========================================================================
+    # 原点设置 (Homing)
+    # ========================================================================
+    
+    @staticmethod
+    def build_homing_step1() -> bytes:
+        """
+        设置原点步骤1: 控制模式6, 控制字0F
+        
+        发送: 0x201, [06, 0F, 00, 00, 00, 00, 00, 00]
+        """
+        return bytes([0x06, KincoProtocol.CONTROL_HOME_1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+    
+    @staticmethod
+    def build_homing_step2() -> bytes:
+        """
+        设置原点步骤2: 控制字1F
+        
+        发送: 0x201, [06, 1F, 00, 00, 00, 00, 00, 00]
+        """
+        return bytes([0x06, KincoProtocol.CONTROL_HOME_2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     
     @staticmethod
     def build_stop_frame(current_position_deg: float = 0.0) -> bytes:
@@ -231,23 +281,23 @@ class KincoProtocol:
     
     @staticmethod
     def position_to_units(position_deg: float) -> int:
-        """将度数转换为协议单位"""
-        return int(position_deg * 100)
+        """将度数转换为协议单位 (角度 × 182 × 90)"""
+        return int(position_deg * KincoProtocol.GEAR_RATIO)
     
     @staticmethod
     def units_to_position(position_units: int) -> float:
         """将协议单位转换为度数"""
-        return position_units * 0.01
+        return position_units / KincoProtocol.GEAR_RATIO
     
     @staticmethod
     def speed_to_units(speed_rpm: float) -> int:
         """将RPM转换为协议单位"""
-        return int(speed_rpm)
+        return int(speed_rpm * KincoProtocol.RPM_TO_UNITS)
     
     @staticmethod
     def units_to_speed(speed_units: int) -> float:
         """将协议单位转换为RPM"""
-        return float(speed_units)
+        return speed_units / KincoProtocol.RPM_TO_UNITS
 
 
 # ============================================================================
@@ -318,26 +368,36 @@ if __name__ == "__main__":
     
     # 测试位置控制
     print("\n[3] Position Control:")
+    print(f"  Gear Ratio: {KincoProtocol.GEAR_RATIO} (16384 inc/rev)")
+    print(f"  RPM Factor: {KincoProtocol.RPM_TO_UNITS:.1f}")
+    
     pos_frame = KincoProtocol.build_position_frame(90.0, 50)
-    print(f"  90° @ 50RPM: ID=0x301, Data={pos_frame.hex()}")
-    print(f"  Parsed: position={KincoProtocol.position_to_units(90.0)} units, "
-          f"speed={KincoProtocol.speed_to_units(50)} units")
+    print(f"  90 deg @ 50RPM: ID=0x301, Data={pos_frame.hex()}")
+    print(f"  Position units: {KincoProtocol.position_to_units(90.0)}")
+    print(f"  Speed units: {KincoProtocol.speed_to_units(50.0):.0f}")
     
     pos_frame2 = KincoProtocol.build_position_frame(0.0, 50)
-    print(f"  0° @ 50RPM:  ID=0x301, Data={pos_frame2.hex()}")
+    print(f"  0 deg @ 50RPM:  ID=0x301, Data={pos_frame2.hex()}")
     
     # 测试相对位置
     print("\n[4] Relative Position:")
     rel_frame = KincoProtocol.build_relative_position_frame(45.0, 30)
-    print(f"  +45° @ 30RPM: ID=0x301, Data={rel_frame.hex()}")
+    print(f"  +45 deg @ 30RPM: ID=0x301, Data={rel_frame.hex()}")
+    
+    # 测试原点设置
+    print("\n[5] Homing (Set Origin):")
+    home_step1 = KincoProtocol.build_homing_step1()
+    print(f"  Step 1 - ID=0x201, Data={home_step1.hex()}")
+    home_step2 = KincoProtocol.build_homing_step2()
+    print(f"  Step 2 - ID=0x201, Data={home_step2.hex()}")
     
     # 测试状态解析
-    print("\n[5] State Parsing:")
-    # 模拟TPDO1数据: position=9000 (90.00°), speed=500 (500 RPM)
+    print("\n[6] State Parsing:")
+    # 模拟TPDO1数据: position=9000 (90.00 deg), speed=500 (500 RPM)
     test_data = struct.pack('<i', 9000) + struct.pack('<h', 500) + bytes([0, 0])
     parsed = KincoProtocol.parse_tpdo1_frame(test_data)
     if parsed:
-        print(f"  Parsed TPDO1: position={parsed['position_deg']:.2f}°, "
+        print(f"  Parsed TPDO1: position={parsed['position_deg']:.2f} deg, "
               f"speed={parsed['speed_rpm']} RPM")
     
     print("\n" + "=" * 60)

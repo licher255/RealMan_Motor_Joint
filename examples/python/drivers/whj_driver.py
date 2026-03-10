@@ -3,7 +3,7 @@ RealMan WHJ Joint Motor Driver
 
 WHJ关节电机驱动实现，支持平滑轨迹规划。
 
-基于 motion_controller.py 中的 SmoothMotorController 实现，
+基于 whj_motion_controller.py 中的 WHJMotionController 实现，
 使用梯形速度规划来避免电机过热。
 
 Features:
@@ -29,6 +29,11 @@ Example:
     can_driver.close()
 """
 
+import sys
+import os
+# 添加父目录到路径，以便导入 core 模块
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
 import time
 import math
 from typing import Optional, List
@@ -40,7 +45,7 @@ from core.protocol import (
     WHJProtocol, Register, WorkMode,
     JointState, ErrorCode
 )
-from .base_driver import BaseMotorDriver, MotorState
+from drivers.base_driver import BaseMotorDriver, MotorState
 
 
 class TrajectoryState(Enum):

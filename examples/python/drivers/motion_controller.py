@@ -1,9 +1,16 @@
 """
 RealMan WHJ Motion Controller with Trajectory Planning
 Implements trapezoidal velocity profile for smooth motion
+2026.03.10非常有用。
 """
 
 import sys
+import os
+# 添加父目录到路径（支持从 drivers 目录运行）
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_project_root = os.path.join(_current_dir, '..')
+sys.path.insert(0, os.path.abspath(_project_root))
+
 import time
 import math
 import atexit
@@ -13,9 +20,7 @@ from enum import Enum
 
 from core import ZlgCanDriver, ZCANDeviceType
 from core.protocol import WHJProtocol, Register, WorkMode
-from .motor_control import MotorController, parse_32bit_value
-
-
+from drivers.whj_motor_control import WHJMotorController, parse_32bit_value
 # Global variables for cleanup
 global_driver = None
 global_motor = None
@@ -241,7 +246,7 @@ class TrapezoidalPlanner:
         return self.state == TrajectoryState.FINISHED
 
 
-class SmoothMotorController(MotorController):
+class SmoothMotorController(WHJMotorController):
     """
     Motor controller with smooth trajectory planning
     
