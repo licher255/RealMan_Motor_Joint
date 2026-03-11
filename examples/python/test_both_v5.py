@@ -1,19 +1,25 @@
 """
 ================================================================================
-WHJ + Kinco - FINAL PERFECT VERSION
+WHJ + Kinco - V5: Non-blocking Motion + Disable Support
 ================================================================================
 
 功能:
 1. WHJ 通信：仅接收 CANFD 帧，彻底屏蔽 Kinco 标准帧干扰 (软件隔离)。
 2. Kinco 控制：支持发送标准 CAN 指令给 Kinco (开环控制)。
 3. 平滑轨迹：WHJ 运动采用梯形规划，避免冲击。
+4. 【NEW】WHJ 运动非阻塞 - 运动过程中可以继续输入 Kinco 指令
+5. 【NEW】支持 disable 关闭 WHJ 使能
+6. 【NEW】退出时自动关闭 WHJ 使能
 
 操作:
-  m <pos> : WHJ 平滑移动到目标位置
+  m <pos> : WHJ 平滑移动到目标位置 (非阻塞)
   k <pos> : Kinco 移动到目标位置 (开环，无位置反馈)
   r       : 读取 WHJ 当前位置
   c       : 清除 WHJ 错误
-  q       : 退出
+  d       : 关闭 WHJ 使能 (disable)
+  e       : 使能 WHJ (enable)
+  s       : 停止 WHJ 运动 (紧急)
+  q       : 退出 (自动关闭 WHJ 使能)
 ================================================================================
 """
 
@@ -25,6 +31,9 @@ import time
 import math
 import struct
 import atexit
+import threading
+import queue
+import sys
 
 from core import ZlgCanDriver, ZCANDeviceType
 from core.zlgcan_driver import CANFrame
@@ -44,18 +53,29 @@ KINCO_RPDO2_ID = 0x301 # Target Position + Velocity
 KINCO_GEAR_RATIO = 16384 # 根据实际电机调整
 KINCO_RPM_TO_UNITS = (65536 * 512) / 1875
 
-# WHJ 运动参数m
+# WHJ 运动参数
 MAX_VEL = 1000.0       # deg/s
 MAX_ACC = 2000.0       # deg/s^2
+MOTION_UPDATE_RATE = 100  # Hz - 运动更新频率
 
 _global_driver = None
+_global_ctrl = None
 
 def cleanup():
-    global _global_driver
+    global _global_driver, _global_ctrl
+    print("\n[Cleanup] 正在清理...")
+    # 先停止 WHJ 使能
+    if _global_ctrl:
+        try:
+            _global_ctrl.whj_disable()
+            print("[Cleanup] WHJ 已关闭使能")
+        except Exception as e:
+            print(f"[Cleanup] 关闭 WHJ 使能失败: {e}")
+    # 关闭设备
     if _global_driver:
         try:
             _global_driver.close()
-            print("\n[Cleanup] Device closed.")
+            print("[Cleanup] 设备已关闭")
         except: pass
 atexit.register(cleanup)
 
@@ -65,23 +85,29 @@ class HybridController:
         self.whj_id = WHJ_ID
         self.whj_resp_id = WHJ_RESPONSE_ID
         
+        # 运动控制线程相关
+        self._motion_thread = None
+        self._motion_stop_event = threading.Event()
+        self._motion_queue = queue.Queue()
+        self._is_moving = False
+        
+        # 输出锁，防止多线程输出混乱
+        self._print_lock = threading.Lock()
+        self._last_status_len = 0
+        
     # ------------------------------------------------------------------------
     # WHJ 部分 (严格过滤模式)
     # ------------------------------------------------------------------------
     def _recv_whj_only(self, timeout_ms=500):
         """
         【核心魔法】只接收 CANFD 帧 (WHJ)，自动丢弃/忽略标准 CAN 帧 (Kinco)。
-        这样即使 Kinco 在疯狂发数据，也不会阻塞 WHJ 的通信。
         """
         start = time.time()
         while (time.time() - start) * 1000 < timeout_ms:
-            # 只尝试读取 CANFD 帧
             frame = self.driver.receive_frame_canfd(timeout_ms=0)
             if frame:
                 if frame.can_id == self.whj_resp_id:
                     return frame.data
-                # 其他 CANFD 帧忽略
-            # 注意：这里故意不调用 receive_frame_can()，从而物理隔绝 Kinco 流量
             time.sleep(0.001)
         return None
 
@@ -133,21 +159,60 @@ class HybridController:
 
     def whj_iap_handshake(self):
         """IAP 握手 - 启动 WHJ 通信 (必须先完成)"""
-        iap_cmd = bytes([0x02, 0x49, 0x00])  # 向寄存器 0x49 写入 0
+        iap_cmd = bytes([0x02, 0x49, 0x00])
         print("  [IAP] 发送 IAP 握手指令...")
         for i in range(3):
-            # 清空接收缓冲
             while self.driver.receive_frame_canfd(timeout_ms=0): pass
-            # 发送 IAP 指令
             self.driver.send_canfd(self.whj_id, iap_cmd, bitrate_switch=True)
             print(f"    IAP 指令 {i+1}/3 已发送")
             time.sleep(0.05)
+
+    def whj_enable(self):
+        """使能 WHJ 驱动"""
+        self._safe_print("  [WHJ] 使能驱动...")
+        en = WHJProtocol.build_write_frame(self.whj_id, Register.SYS_ENABLE_DRIVER, 1)
+        if not self._send_whj_cmd(en, timeout_ms=500):
+            self._safe_print("  [警告] 使能驱动指令发送失败或无响应")
+            return False
+        time.sleep(0.1)
+        self._safe_print("  [WHJ] 驱动已使能")
+        return True
+
+    def _safe_print(self, msg, end='\n', flush=False):
+        """线程安全的打印"""
+        with self._print_lock:
+            # 如果之前有状态行，先清除
+            if self._last_status_len > 0 and end == '\n':
+                sys.stdout.write('\r' + ' ' * self._last_status_len + '\r')
+                self._last_status_len = 0
+            print(msg, end=end, flush=flush)
+
+    def _print_status(self, msg):
+        """打印单行状态（会被后续输出覆盖）"""
+        with self._print_lock:
+            # 清除之前的行
+            if self._last_status_len > 0:
+                sys.stdout.write('\r' + ' ' * self._last_status_len + '\r')
+            sys.stdout.write(msg)
+            self._last_status_len = len(msg)
+            sys.stdout.flush()
+
+    def whj_disable(self):
+        """关闭 WHJ 驱动使能"""
+        self._safe_print("  [WHJ] 关闭驱动使能...")
+        # 先停止任何正在进行的运动
+        self.whj_stop_motion()
+        dis = WHJProtocol.build_write_frame(self.whj_id, Register.SYS_ENABLE_DRIVER, 0)
+        for i in range(3):  # 发送3次确保可靠
+            self.driver.send_canfd(self.whj_id, dis, bitrate_switch=True)
+            time.sleep(0.02)
+        self._safe_print("  [WHJ] 驱动已关闭")
 
     def whj_init(self):
         """WHJ 初始化 - 带自检流程"""
         print("[Init] WHJ 启动自检...")
         
-        # Step 0: IAP 握手 (必须先完成，发送3次确保启动)
+        # Step 0: IAP 握手
         self.whj_iap_handshake()
         time.sleep(0.1)
         
@@ -178,7 +243,6 @@ class HybridController:
             for i in range(3):
                 self.whj_clear_error()
                 time.sleep(0.05)
-            # 再次检查
             error_code = self.whj_get_error()
             if error_code is not None and error_code != 0:
                 print(f"  [错误] 清除失败，错误依然存在: 0x{error_code:04X}")
@@ -188,11 +252,7 @@ class HybridController:
             print("  [OK] WHJ 状态正常，无错误")
         
         # 使能驱动
-        print("  [Init] 使能 WHJ 驱动...")
-        en = WHJProtocol.build_write_frame(self.whj_id, Register.SYS_ENABLE_DRIVER, 1)
-        if not self._send_whj_cmd(en, timeout_ms=500):
-            print("  [警告] 使能驱动指令发送失败或无响应")
-        time.sleep(0.1)
+        self.whj_enable()
         
         # 设置工作模式为位置模式
         print("  [Init] 设置位置模式...")
@@ -213,17 +273,38 @@ class HybridController:
         else:
             print("[Init] WHJ 初始化完成 (位置读取失败)")
 
-    def whj_move_smooth(self, target_deg):
-        print(f"\n[WHJ] Moving to {target_deg}° (Smooth)")
+    # ------------------------------------------------------------------------
+    # WHJ 非阻塞运动控制
+    # ------------------------------------------------------------------------
+    def whj_is_moving(self):
+        """检查 WHJ 是否正在运动"""
+        return self._is_moving
+
+    def whj_stop_motion(self):
+        """停止 WHJ 运动"""
+        if self._motion_thread and self._motion_thread.is_alive():
+            print("\n  [WHJ] 正在停止运动...")
+            self._motion_stop_event.set()
+            self._motion_thread.join(timeout=1.0)
+            self._is_moving = False
+            print("  [WHJ] 运动已停止")
+
+    def _motion_worker(self, target_deg):
+        """运动控制工作线程"""
+        self._is_moving = True
+        self._motion_stop_event.clear()
+        
         curr = self.whj_get_pos()
         if curr is None:
-            print("[Error] Cannot read WHJ pos")
-            return False
+            self._safe_print("[Error] Cannot read WHJ pos")
+            self._is_moving = False
+            return
         
         dist = target_deg - curr
         if abs(dist) < 0.5:
-            print("  Already there.")
-            return True
+            self._safe_print("  Already there.")
+            self._is_moving = False
+            return
 
         # 梯形规划计算
         t_acc = MAX_VEL / MAX_ACC
@@ -236,43 +317,74 @@ class HybridController:
             t_const = (abs_dist - 2 * d_acc) / MAX_VEL
             t_total = 2 * t_acc + t_const
 
-        print(f"  Dist: {abs_dist:.1f}°, Time: {t_total:.2f}s")
+        self._safe_print(f"  Dist: {abs_dist:.1f}°, Time: {t_total:.2f}s")
         
         start_time = time.time()
         direction = 1 if dist > 0 else -1
         
-        while True:
-            t = time.time() - start_time
-            if t >= t_total:
-                self.whj_set_pos_raw(int(target_deg / 0.0001))
-                print(f"[WHJ] Done. Final: {target_deg}°")
-                break
+        try:
+            while not self._motion_stop_event.is_set():
+                t = time.time() - start_time
+                if t >= t_total:
+                    # 到达目标
+                    self.driver.send_canfd(self.whj_id, 
+                        WHJProtocol.build_write_frame(self.whj_id, Register.TAG_POSITION_L, 
+                            int(target_deg / 0.0001) & 0xFFFF), bitrate_switch=True)
+                    self.driver.send_canfd(self.whj_id, 
+                        WHJProtocol.build_write_frame(self.whj_id, Register.TAG_POSITION_H, 
+                            (int(target_deg / 0.0001) >> 16) & 0xFFFF), bitrate_switch=True)
+                    self._safe_print(f"\n[WHJ] Done. Final: {target_deg}°")
+                    break
+                
+                # 计算插值点
+                if t < t_acc:
+                    s = 0.5 * MAX_ACC * t * t
+                elif t < (t_total - t_acc):
+                    s = d_acc + MAX_VEL * (t - t_acc)
+                else:
+                    remaining_t = t_total - t
+                    s = abs_dist - 0.5 * MAX_ACC * remaining_t * remaining_t
+                
+                current_target = curr + direction * s
+                raw = int(current_target / 0.0001)
+                
+                # 高速发送 (不等待应答)
+                self.driver.send_canfd(self.whj_id, 
+                    WHJProtocol.build_write_frame(self.whj_id, Register.TAG_POSITION_L, raw & 0xFFFF), 
+                    bitrate_switch=True)
+                self.driver.send_canfd(self.whj_id, 
+                    WHJProtocol.build_write_frame(self.whj_id, Register.TAG_POSITION_H, (raw >> 16) & 0xFFFF), 
+                    bitrate_switch=True)
+                
+                # 每 0.2 秒更新一次状态行（使用 \r 不换行）
+                if int(t * 5) % 5 == 0:  # 每秒更新几次
+                    self._print_status(f"  [WHJ Moving] {current_target:.1f}° / {target_deg}° ({100*t/t_total:.0f}%)")
+                
+                time.sleep(1.0 / MOTION_UPDATE_RATE)
             
-            # 计算插值点
-            if t < t_acc:
-                s = 0.5 * MAX_ACC * t * t
-            elif t < (t_total - t_acc):
-                s = d_acc + MAX_VEL * (t - t_acc)
-            else:
-                remaining_t = t_total - t
-                s = abs_dist - 0.5 * MAX_ACC * remaining_t * remaining_t
+            # 最终校准
+            time.sleep(0.1)
+            final = self.whj_get_pos()
+            self._safe_print(f"[Check] WHJ Pos: {final:.2f}° (Err: {abs(final-target_deg):.2f}°)")
             
-            current_target = curr + direction * s
-            raw = int(current_target / 0.0001)
-            
-            # 高速发送 (不等待应答，依靠内部闭环)
-            self.driver.send_canfd(self.whj_id, WHJProtocol.build_write_frame(self.whj_id, Register.TAG_POSITION_L, raw & 0xFFFF), bitrate_switch=True)
-            self.driver.send_canfd(self.whj_id, WHJProtocol.build_write_frame(self.whj_id, Register.TAG_POSITION_H, (raw >> 16) & 0xFFFF), bitrate_switch=True)
-            
-            time.sleep(0.002) # 500Hz
-            
-            if int(t * 10) % 5 == 0:
-                print(f"  Progress: {current_target:.1f}°", end='\r')
+        except Exception as e:
+            self._safe_print(f"\n[WHJ Motion Error] {e}")
+        finally:
+            self._is_moving = False
+
+    def whj_move_smooth_async(self, target_deg):
+        """
+        启动 WHJ 平滑移动 (非阻塞)
+        返回 True 表示成功启动，False 表示已有运动在进行中
+        """
+        if self._is_moving:
+            self._safe_print("[Error] WHJ 正在运动中，请先等待或发送 's' 停止")
+            return False
         
-        # 校准
-        time.sleep(0.1)
-        final = self.whj_get_pos()
-        print(f"\n[Check] WHJ Pos: {final:.2f}° (Err: {abs(final-target_deg):.2f}°)")
+        self._safe_print(f"\n[WHJ] 启动平滑移动至 {target_deg}°")
+        self._motion_thread = threading.Thread(target=self._motion_worker, args=(target_deg,))
+        self._motion_thread.daemon = True
+        self._motion_thread.start()
         return True
 
     # ------------------------------------------------------------------------
@@ -294,34 +406,29 @@ class HybridController:
         self.kinco_send(KINCO_NMT_ID, bytes([0x01, KINCO_ID]))
         time.sleep(0.1)
         # Enable (Control Word)
-        # 0x013F1000 -> 0x0000003F (Little Endian mapping depends on object dictionary, usually 0x06 for Enable)
-        # Standard CiA402: 0x0006 (Switch On), 0x0007 (Enable Voltage), 0x000F (Quick Stop), 0x001F (Enable Operation)
-        # Simplified for Kinco often: 0x01 (Enable) in first byte or specific mapping
-        # Here using a common sequence:
-        data = bytes([0x01, 0x3F, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00]) # Example PDO mapping
+        data = bytes([0x01, 0x3F, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00])
         self.kinco_send(KINCO_RPDO1_ID, data)
         time.sleep(0.1)
         print("[Init] Kinco OK (Open Loop)")
 
     def kinco_move(self, deg):
-        print(f"\n[Kinco] Moving to {deg}° (Open Loop)")
+        self._safe_print(f"\n[Kinco] Moving to {deg}° (Open Loop)")
         pos_raw = int(deg * KINCO_GEAR_RATIO)
-        vel_raw = int(50 * KINCO_RPM_TO_UNITS) # 50 RPM
+        vel_raw = int(50 * KINCO_RPM_TO_UNITS)
         
-        # Pack: Position (int32) + Velocity (uint32)
         data = struct.pack('<i', pos_raw) + struct.pack('<I', vel_raw)
         
-        # 发送 3 次以确保到达 (因为不收应答)
         for i in range(3):
             self.kinco_send(KINCO_RPDO2_ID, data)
             time.sleep(0.05)
         
-        print(f"[Kinco] Command dispatched. (No feedback check)")
+        self._safe_print(f"[Kinco] Command dispatched. (No feedback check)")
+
 
 def main():
-    global _global_driver
+    global _global_driver, _global_ctrl
     print("="*60)
-    print("HYBRID CONTROL: WHJ (Filtered) + Kinco (Open Loop)")
+    print("HYBRID CONTROL V5: Non-blocking WHJ + Kinco")
     print("="*60)
     
     try:
@@ -335,49 +442,73 @@ def main():
         return
 
     ctrl = HybridController(driver)
+    _global_ctrl = ctrl
     ctrl.whj_init()
     ctrl.kinco_init()
     
     print("\nReady!")
     print("Commands:")
-    print("  m <pos> : Move WHJ (Smooth, Filtered)")
+    print("  m <pos> : Move WHJ (Smooth, Non-blocking)")
     print("  k <pos> : Move Kinco (Open Loop)")
     print("  r       : Read WHJ Pos")
     print("  c       : Clear WHJ Error")
-    print("  q       : Quit")
+    print("  d       : Disable WHJ (关闭使能)")
+    print("  e       : Enable WHJ (使能)")
+    print("  s       : Stop WHJ Motion (停止运动)")
+    print("  q       : Quit (自动关闭 WHJ 使能)")
 
     while True:
         try:
-            txt = input("> ").strip()
-            if not txt: continue
+            # 显示提示符前清除状态行
+            with ctrl._print_lock:
+                if ctrl._last_status_len > 0:
+                    sys.stdout.write('\r' + ' ' * ctrl._last_status_len + '\r')
+                    ctrl._last_status_len = 0
+                prompt = "[MOVING] > " if ctrl.whj_is_moving() else "> "
+                sys.stdout.write(prompt)
+                sys.stdout.flush()
+            
+            txt = input().strip()
+            if not txt: 
+                continue
+            
             parts = txt.split()
             cmd = parts[0].lower()
             
-            if cmd == 'q': break
+            if cmd == 'q': 
+                break
             
             elif cmd == 'm' and len(parts) > 1:
-                ctrl.whj_move_smooth(float(parts[1]))
+                ctrl.whj_move_smooth_async(float(parts[1]))
             
             elif cmd == 'k' and len(parts) > 1:
                 ctrl.kinco_move(float(parts[1]))
             
             elif cmd == 'r':
                 p = ctrl.whj_get_pos()
-                print(f"WHJ Pos: {p}" if p else "WHJ Pos: Read Failed")
+                ctrl._safe_print(f"WHJ Pos: {p}" if p else "WHJ Pos: Read Failed")
             
             elif cmd == 'c':
                 ctrl.whj_clear_error()
+            
+            elif cmd == 'd':
+                ctrl.whj_disable()
+            
+            elif cmd == 'e':
+                ctrl.whj_enable()
+            
+            elif cmd == 's':
+                ctrl.whj_stop_motion()
                 
         except KeyboardInterrupt:
             print("\nStopping...")
-            ctrl.whj_clear_error()
+            ctrl.whj_stop_motion()
             break
         except Exception as e:
             print(f"Err: {e}")
             import traceback
             traceback.print_exc()
 
-    driver.close()
     print("Bye! Have a great evening!")
 
 if __name__ == "__main__":
