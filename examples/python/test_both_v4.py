@@ -44,9 +44,13 @@ KINCO_RPDO2_ID = 0x301 # Target Position + Velocity
 KINCO_GEAR_RATIO = 16384 # 根据实际电机调整
 KINCO_RPM_TO_UNITS = (65536 * 512) / 1875
 
-# WHJ 运动参数m
-MAX_VEL = 1000.0       # deg/s
-MAX_ACC = 2000.0       # deg/s^2
+# WHJ 运动参数
+MAX_VEL = 1000.0       # [deg/s]
+MAX_ACC = 2000.0       # [deg/s^2]
+
+# 单位转换常量
+MM_PER_DEGREE = 0.018          # [mm/°]
+DEGREE_PER_MM = 1000.0 / 18.0  # [°/mm]
 
 _global_driver = None
 
@@ -107,6 +111,13 @@ class HybridController:
             time.sleep(0.05)
         return None
 
+    def whj_get_pos_mm(self):
+        """获取 WHJ 位置 [mm]"""
+        pos_deg = self.whj_get_pos()
+        if pos_deg is not None:
+            return pos_deg * MM_PER_DEGREE
+        return None
+
     def whj_set_pos_raw(self, raw):
         cmd_l = WHJProtocol.build_write_frame(self.whj_id, Register.TAG_POSITION_L, raw & 0xFFFF)
         if not self._send_whj_cmd(cmd_l, timeout_ms=200): return False
@@ -155,7 +166,11 @@ class HybridController:
         print("  [自检1/3] 刷新位置查询...")
         for i in range(3):
             pos = self.whj_get_pos()
-            print(f"    尝试 {i+1}/3: 位置={pos:.2f}°" if pos is not None else f"    尝试 {i+1}/3: 无响应")
+            if pos is not None:
+                pos_mm = pos * MM_PER_DEGREE
+                print(f"    尝试 {i+1}/3: 位置={pos:.2f}[°] ({pos_mm:.4f}[mm])")
+            else:
+                print(f"    尝试 {i+1}/3: 无响应")
             time.sleep(0.05)
         
         # Step 2: 发送 3 次错误清除指令
@@ -205,7 +220,8 @@ class HybridController:
         final_pos = self.whj_get_pos()
         final_error = self.whj_get_error()
         if final_pos is not None:
-            print(f"[Init] WHJ 初始化完成 | 位置: {final_pos:.2f}°", end="")
+            final_pos_mm = final_pos * MM_PER_DEGREE
+            print(f"[Init] WHJ 初始化完成 | 位置: {final_pos:.2f}[°] ({final_pos_mm:.4f}[mm])", end="")
             if final_error is not None:
                 print(f" | 错误码: 0x{final_error:04X}")
             else:
@@ -214,13 +230,18 @@ class HybridController:
             print("[Init] WHJ 初始化完成 (位置读取失败)")
 
     def whj_move_smooth(self, target_deg):
-        print(f"\n[WHJ] Moving to {target_deg}° (Smooth)")
+        target_mm = target_deg * MM_PER_DEGREE
+        print(f"\n[WHJ] Moving to {target_deg:.2f}[°] ({target_mm:.4f}[mm]) (Smooth)")
         curr = self.whj_get_pos()
         if curr is None:
             print("[Error] Cannot read WHJ pos")
             return False
         
+        curr_mm = curr * MM_PER_DEGREE
+        print(f"  Current: {curr:.2f}[°] ({curr_mm:.4f}[mm])")
+        
         dist = target_deg - curr
+        dist_mm = dist * MM_PER_DEGREE
         if abs(dist) < 0.5:
             print("  Already there.")
             return True
@@ -236,7 +257,7 @@ class HybridController:
             t_const = (abs_dist - 2 * d_acc) / MAX_VEL
             t_total = 2 * t_acc + t_const
 
-        print(f"  Dist: {abs_dist:.1f}°, Time: {t_total:.2f}s")
+        print(f"  Dist: {abs_dist:.1f}[°] ({abs_dist * MM_PER_DEGREE:.4f}[mm]), Time: {t_total:.2f}[s]")
         
         start_time = time.time()
         direction = 1 if dist > 0 else -1
@@ -267,12 +288,16 @@ class HybridController:
             time.sleep(0.002) # 500Hz
             
             if int(t * 10) % 5 == 0:
-                print(f"  Progress: {current_target:.1f}°", end='\r')
+                current_target_mm = current_target * MM_PER_DEGREE
+                print(f"  Progress: {current_target:.1f}[°] ({current_target_mm:.4f}[mm])", end='\r')
         
         # 校准
         time.sleep(0.1)
         final = self.whj_get_pos()
-        print(f"\n[Check] WHJ Pos: {final:.2f}° (Err: {abs(final-target_deg):.2f}°)")
+        final_mm = final * MM_PER_DEGREE
+        err_deg = abs(final - target_deg)
+        err_mm = err_deg * MM_PER_DEGREE
+        print(f"\n[Check] WHJ Pos: {final:.2f}[°] ({final_mm:.4f}[mm]) (Err: {err_deg:.2f}[°] / {err_mm:.4f}[mm])")
         return True
 
     # ------------------------------------------------------------------------
@@ -363,7 +388,11 @@ def main():
             
             elif cmd == 'r':
                 p = ctrl.whj_get_pos()
-                print(f"WHJ Pos: {p}" if p else "WHJ Pos: Read Failed")
+                if p is not None:
+                    p_mm = p * MM_PER_DEGREE
+                    print(f"WHJ Pos: {p:.4f}[°] ({p_mm:.4f}[mm])")
+                else:
+                    print("WHJ Pos: Read Failed")
             
             elif cmd == 'c':
                 ctrl.whj_clear_error()

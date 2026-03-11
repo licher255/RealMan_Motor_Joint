@@ -48,6 +48,11 @@ from core.protocol import (
 from drivers.base_driver import BaseMotorDriver, MotorState
 
 
+# Unit conversion constants for linear motion
+MM_PER_DEGREE = 0.018       # 1000° = 18.0mm
+DEGREE_PER_MM = 1000.0 / 18.0  # ≈55.5556°/mm
+
+
 class TrajectoryState(Enum):
     """轨迹状态"""
     IDLE = "idle"
@@ -328,7 +333,11 @@ class WHJDriver(BaseMotorDriver):
         return False
     
     def get_position(self) -> Optional[float]:
-        """获取当前位置"""
+        """获取当前位置 [°]
+        
+        Returns:
+            Current position in degrees, or None if failed
+        """
         cmd = WHJProtocol.build_read_frame(self.motor_id, Register.CUR_POSITION_L, 2)
         resp, err = self.send_command(cmd)
         
@@ -346,7 +355,14 @@ class WHJDriver(BaseMotorDriver):
         return val * 0.0001
     
     def set_target_position(self, position: float) -> bool:
-        """设置目标位置 (直接发送)"""
+        """设置目标位置 (直接发送) [°]
+        
+        Args:
+            position: Target position in degrees
+        
+        Returns:
+            True if successful
+        """
         cmds = WHJProtocol.build_set_target_position(self.motor_id, position)
         for cmd in cmds:
             if not self.can_driver.send(can_id=self.motor_id, data=cmd):
@@ -356,13 +372,13 @@ class WHJDriver(BaseMotorDriver):
     
     def set_position(self, position: float, **kwargs) -> bool:
         """
-        设置目标位置 (带平滑轨迹规划)
+        设置目标位置 (带平滑轨迹规划) [°]
         
         Args:
-            position: 目标位置 (度)
-            **kwargs: 可选参数
-                - wait: 是否等待完成 (默认True)
-                - timeout: 超时时间 (秒)
+            position: Target position in degrees [°]
+            **kwargs: Optional parameters
+                - wait: Whether to wait for completion (default True)
+                - timeout: Timeout in seconds
         
         Returns:
             True if successful
@@ -479,8 +495,61 @@ class WHJDriver(BaseMotorDriver):
             return self.set_target_position(current)
         return True
     
+    def get_position_mm(self) -> Optional[float]:
+        """获取当前位置 [mm]
+        
+        Returns:
+            Current position in millimeters, or None if failed
+        """
+        position_deg = self.get_position()
+        if position_deg is None:
+            return None
+        return position_deg * MM_PER_DEGREE
+    
+    def set_position_mm(self, target_mm: float, **kwargs) -> bool:
+        """
+        设置目标位置 (带平滑轨迹规划) [mm]
+        
+        Converts mm to degrees internally and calls set_position().
+        
+        Args:
+            target_mm: Target position in millimeters [mm]
+            **kwargs: Optional parameters (passed to set_position)
+                - wait: Whether to wait for completion (default True)
+                - timeout: Timeout in seconds
+        
+        Returns:
+            True if successful
+        """
+        target_deg = target_mm * DEGREE_PER_MM
+        return self.set_position(target_deg, **kwargs)
+    
+    def move_relative_mm(self, delta_mm: float, **kwargs) -> bool:
+        """
+        相对移动指定距离 [mm]
+        
+        Moves the motor by the specified delta from current position.
+        
+        Args:
+            delta_mm: Relative distance to move in millimeters [mm]
+                      Positive for forward, negative for backward
+            **kwargs: Optional parameters (passed to set_position)
+                - wait: Whether to wait for completion (default True)
+                - timeout: Timeout in seconds
+        
+        Returns:
+            True if successful
+        """
+        current_mm = self.get_position_mm()
+        if current_mm is None:
+            print(f"[WHJ-{self.motor_id}] Error: Failed to get current position")
+            return False
+        
+        target_mm = current_mm + delta_mm
+        return self.set_position_mm(target_mm, **kwargs)
+    
     def get_state(self, query: bool = True) -> Optional[MotorState]:
-        """获取电机状态"""
+        """获取电机状态 (包含位置 [°])"""
         if not query:
             return self._state
         
@@ -510,7 +579,11 @@ class WHJDriver(BaseMotorDriver):
         return resp is not None
     
     def set_work_mode(self, mode: WorkMode) -> bool:
-        """设置工作模式"""
+        """设置工作模式
+        
+        Args:
+            mode: Work mode (OPEN_LOOP, CURRENT_MODE, SPEED_MODE, POSITION_MODE)
+        """
         cmd = WHJProtocol.build_set_work_mode(self.motor_id, mode)
         resp, err = self.send_command(cmd)
         return resp is not None
@@ -533,3 +606,7 @@ class WHJDriver(BaseMotorDriver):
     
     def __repr__(self):
         return f"WHJDriver(id={self.motor_id}, profile={self.profile.max_velocity}°/s)"
+    
+    # Aliases for backward compatibility and convenience
+    move_to_position = set_position
+    move_to_position_mm = set_position_mm

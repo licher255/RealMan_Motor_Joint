@@ -47,6 +47,12 @@ KINCO_RPM_TO_UNITS = (65536 * 512) / 1875
 # 关键调整：更慢、更稳
 STEP_SIZE_DEG = 20.0      # 每次移动 20 度 (减少包数量)
 STEP_DELAY_SEC = 0.20     # 每步间隔 200ms (给总线充分时间)
+
+# ============================================================================
+# 单位转换常数 (Unit Conversion Constants)
+# ============================================================================
+MM_PER_DEGREE = 0.018           # [mm/°] 每度对应的毫米数
+DEGREE_PER_MM = 1000.0 / 18.0   # [°/mm] 每毫米对应的度数 (~55.556)
 RX_TIMEOUT_MS = 500       # 接收超时 500ms
 MAX_RETRY_PER_STEP = 2    # 单步失败重试次数
 
@@ -92,6 +98,7 @@ class StableWHJ:
         return None
 
     def get_pos(self, verbose=False):
+        """读取当前位置 [°] 和 [mm]"""
         cmd = WHJProtocol.build_read_frame(WHJ_ID, Register.CUR_POSITION_L, 2)
         resp = self._send_and_wait(cmd, verbose=verbose)
         if resp and len(resp) >= 6:
@@ -99,8 +106,10 @@ class StableWHJ:
             high = resp[4] | (resp[5] << 8)
             val = (high << 16) | low
             if val & 0x80000000: val -= 0x100000000
-            return val * 0.0001
-        return None
+            pos_deg = val * 0.0001      # [°] 当前位置 (度)
+            pos_mm = pos_deg * MM_PER_DEGREE  # [mm] 当前位置 (毫米)
+            return pos_deg, pos_mm
+        return None, None
 
     def set_pos_raw(self, raw, verbose=True):
         # Low
@@ -140,9 +149,10 @@ class StableWHJ:
             print("[ABORT] Cannot read position!")
             return False
             
-        print(f"  [Start Pos] {curr:.2f}°")
+        curr_deg, curr_mm = curr
+        print(f"  [Start Pos] {curr_deg:.2f}° [{curr_mm:.3f} mm]")
         
-        distance = target_deg - curr
+        distance = target_deg - curr_deg
         if abs(distance) < 1.0:
             print("  [SKIP] Already there.")
             return True
@@ -151,7 +161,7 @@ class StableWHJ:
         steps = int(abs(distance) / STEP_SIZE_DEG)
         if steps == 0: steps = 1
         
-        print(f"  [Plan] Steps: {steps}")
+        print(f"  [Plan] Steps: {steps}, Target: {target_deg:.2f}° [{target_deg * MM_PER_DEGREE:.3f} mm]")
 
         success = 0
         failed = 0
@@ -177,7 +187,8 @@ class StableWHJ:
                     break
             
             if step_ok:
-                print(f"OK (Target: {next_target:.1f}°)")
+                next_target_mm = next_target * MM_PER_DEGREE
+                print(f"OK (Target: {next_target:.1f}° [{next_target_mm:.3f} mm])")
                 success += 1
                 curr = next_target # 更新逻辑位置
                 time.sleep(STEP_DELAY_SEC) # 关键延时
@@ -190,10 +201,16 @@ class StableWHJ:
                 # 可以选择继续或退出，这里选择继续尝试后面的
         
         # 最终修正
-        print(f"  [Final] Aligning to {target_deg}...")
+        target_mm = target_deg * MM_PER_DEGREE
+        print(f"  [Final] Aligning to {target_deg:.2f}° [{target_mm:.3f} mm]...")
         final_raw = int(target_deg / 0.0001)
         if self.set_pos_raw(final_raw):
-            print("  [Done] Final OK")
+            final_pos = self.get_pos(verbose=False)
+            if final_pos[0] is not None:
+                final_deg, final_mm = final_pos
+                print(f"  [Done] Final OK: {final_deg:.2f}° [{final_mm:.3f} mm]")
+            else:
+                print("  [Done] Final OK")
         else:
             print("  [Warn] Final Failed (Try 'c' to clear error)")
 
@@ -235,10 +252,10 @@ class SimpleKinco:
         time.sleep(0.1)
     def move(self, deg):
         pos = int(deg * KINCO_GEAR_RATIO)
-        vel = int(50 * KINCO_RPM_TO_UNITS)
+        vel = int(50 * KINCO_RPM_TO_UNITS)  # [rpm] 目标转速
         data = struct.pack('<i', pos) + struct.pack('<I', vel)
         self.send(KINCO_RPDO2_ID, data)
-        print(f"[Kinco] Cmd Sent: {deg}°")
+        print(f"[Kinco] Cmd Sent: {deg:.2f}°")
 
 def main():
     global _global_driver
@@ -285,17 +302,23 @@ def main():
             if cmd == 'q': break
             
             elif cmd == 'whj' and len(parts) > 1:
-                whj.move_safe(float(parts[1]))
+                target_deg = float(parts[1])
+                whj.move_safe(target_deg)
                 # 运动后读一次
                 p = whj.get_pos(verbose=False)
-                if p: print(f"[Check] Current: {p:.2f}°")
+                if p[0] is not None:
+                    p_deg, p_mm = p
+                    print(f"[Check] Current: {p_deg:.2f}° [{p_mm:.3f} mm]")
             
             elif cmd == 'kc' and len(parts) > 1:
                 kinco.move(float(parts[1]))
             
             elif cmd == 'r':
-                p = whj.get_pos()
-                print(f"Pos: {p}" if p else "Pos: Read Failed")
+                p_deg, p_mm = whj.get_pos()
+                if p_deg is not None:
+                    print(f"Pos: {p_deg:.4f}° [{p_mm:.4f} mm]")
+                else:
+                    print("Pos: Read Failed")
             
             elif cmd == 'c':
                 whj.clear_error()

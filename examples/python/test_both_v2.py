@@ -51,6 +51,12 @@ WHJ_RETRY_COUNT = 3        # 重试次数
 CONTROL_FREQ_HZ = 100      # 降低频率至 100Hz (原 500Hz)，给驱动喘息时间
 DT_INTERVAL = 1.0 / CONTROL_FREQ_HZ
 
+# ============================================================================
+# 单位转换常量 (毫米控制)
+# ============================================================================
+MM_PER_DEGREE = 0.018          # 每度对应的毫米数
+DEGREE_PER_MM = 1000.0 / 18.0  # 每毫米对应的度数 (约 55.556 °/mm)
+
 _global_driver = None
 _kinco_lock = threading.Lock() # 简单的互斥锁
 
@@ -183,7 +189,8 @@ class RobustWHJController:
             print(f"[WHJ] Already at target ({current:.2f})")
             return True
 
-        print(f"[WHJ] Moving {current:.2f} -> {target_deg:.2f} (Dist: {abs(distance):.2f})")
+        distance_mm = distance * MM_PER_DEGREE
+        print(f"[WHJ] Moving {current:.2f}° ({current * MM_PER_DEGREE:.3f} mm) -> {target_deg:.2f}° ({target_deg * MM_PER_DEGREE:.3f} mm) (Dist: {abs(distance):.2f}° / {abs(distance_mm):.3f} mm)")
         print(f"[WHJ] LOCKING Kinco access during motion...")
         
         self.is_moving = True
@@ -205,12 +212,14 @@ class RobustWHJController:
                 
                 error = target_deg - curr_pos
                 
+                error_mm = error * MM_PER_DEGREE
                 if abs(error) < 1.0: # 到达阈值
                     break
                 
-                # 2. 计算目标速度 (限幅)
+                # 2. 计算目标速度 (限幅) [deg/s] -> [mm/s]
                 vel_cmd = error * k_p
                 vel_cmd = max(-max_vel_deg_s, min(max_vel_deg_s, vel_cmd))
+                vel_mm_s = vel_cmd * MM_PER_DEGREE
                 
                 # 3. 计算下一时刻目标位置 (简单积分)
                 # 注意：WHJ 是位置模式，我们直接发位置指令
@@ -239,7 +248,11 @@ class RobustWHJController:
             # 最后确保到达最终目标
             final_raw = int(target_deg / 0.0001)
             self.set_target_position_raw(final_raw)
-            print(f"[WHJ] Motion finished. UNLOCKING Kinco.")
+            final_pos = self.get_position()
+            if final_pos is not None:
+                print(f"[WHJ] Motion finished. Final: {final_pos:.2f}° ({final_pos * MM_PER_DEGREE:.3f} mm). UNLOCKING Kinco.")
+            else:
+                print(f"[WHJ] Motion finished. UNLOCKING Kinco.")
 
 # ============================================================================
 # Kinco 控制器 (简化版，避免干扰)
@@ -338,24 +351,32 @@ def main():
             
             elif op == 'whj' and len(cmd) > 1:
                 target = float(cmd[1])
+                print(f"[Command] WHJ target: {target:.2f}° ({target * MM_PER_DEGREE:.3f} mm)")
                 whj.move_smooth(target)
             
             elif op == 'kc' and len(cmd) > 1:
                 target = float(cmd[1])
                 kinco.set_position(target)
-                print(f"[Kinco] Command sent to {target}°")
+                print(f"[Kinco] Command sent to {target:.2f}°")
             
             elif op == 'rwhj':
                 # 读取 WHJ 位置 (会触发 flush，可能短暂影响 Kinco)
                 p = whj.get_position()
-                print(f"[WHJ] Pos: {p}" if p else "[WHJ] Read Failed")
+                if p is not None:
+                    p_mm = p * MM_PER_DEGREE
+                    print(f"[WHJ] Pos: {p:.2f}° [{p_mm:.3f} mm]")
+                else:
+                    print("[WHJ] Read Failed")
             
             elif op == 'rkc':
                 if whj.is_moving:
                     print("[Kinco] Skipped (WHJ is moving)")
                 else:
                     p = kinco.safe_read_state()
-                    print(f"[Kinco] Pos: {p:.2f}" if p else "[Kinco] No Data")
+                    if p is not None:
+                        print(f"[Kinco] Pos: {p:.2f}°")
+                    else:
+                        print("[Kinco] No Data")
             
             elif op == 'e':
                 whj.enable(True)
@@ -363,7 +384,9 @@ def main():
                 print("[OK] Both Enabled")
             
             elif op == 'h':
-                print("Commands: whj <pos>, kc <pos>, rwhj, rkc, e, q")
+                print("Commands: whj <pos[°]>, kc <pos[°]>, rwhj, rkc, e, q")
+                print("  Units: [°] = degrees, [mm] = millimeters, [rpm] = revolutions per minute")
+                print(f"  Conversion: 1° = {MM_PER_DEGREE} mm, 1 mm = {DEGREE_PER_MM:.3f}°")
             
         except KeyboardInterrupt:
             break

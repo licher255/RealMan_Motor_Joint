@@ -4,6 +4,10 @@ Implements trapezoidal velocity profile for smooth motion
 2026.03.10非常有用。
 """
 
+# Unit conversion constants
+MM_PER_DEGREE = 0.018          # [mm/°]  1000° = 18.0mm
+DEGREE_PER_MM = 1000.0 / 18.0  # [°/mm]  1mm = 55.556°
+
 import sys
 import os
 # 添加父目录到路径（支持从 drivers 目录运行）
@@ -54,9 +58,9 @@ atexit.register(cleanup_resources)
 @dataclass
 class MotionProfile:
     """Motion profile parameters"""
-    max_velocity: float = 14400.0      # degrees/s
-    max_acceleration: float = 72000.0  # degrees/s^2
-    max_deceleration: float = 72000.0  # degrees/s^2
+    max_velocity: float = 14400.0      # [°/s] degrees per second
+    max_acceleration: float = 72000.0  # [°/s^2] degrees per second squared
+    max_deceleration: float = 72000.0  # [°/s^2] degrees per second squared
     
     # Jerk for S-curve (0 = trapezoidal, >0 = S-curve)
     jerk: float = 0.0
@@ -108,8 +112,8 @@ class TrapezoidalPlanner:
         Plan a trapezoidal trajectory
         
         Args:
-            start_pos: Starting position in degrees
-            target_pos: Target position in degrees
+            start_pos: Starting position [°]
+            target_pos: Target position [°]
         """
         self.reset()
         
@@ -280,9 +284,9 @@ class SmoothMotorController(WHJMotorController):
         Move to target position with smooth trajectory
         
         Args:
-            target_pos: Target position in degrees
+            target_pos: Target position [°]
             wait: Whether to wait for motion to complete
-            timeout: Maximum time to wait (seconds)
+            timeout: Maximum time to wait [s]
         
         Returns:
             True if successful
@@ -404,6 +408,54 @@ class SmoothMotorController(WHJMotorController):
         """Stop current motion"""
         self.running = False
         self.planner.reset()
+    
+    def get_position_mm(self) -> Optional[float]:
+        """
+        Get current position in millimeters [mm]
+        
+        Returns:
+            Position in mm, or None if read failed
+        """
+        pos_deg = self.get_position()
+        if pos_deg is None:
+            return None
+        return pos_deg * MM_PER_DEGREE
+    
+    def move_to_position_mm(self, target_mm: float, wait: bool = True, timeout: float = None) -> bool:
+        """
+        Move to target position in millimeters [mm] with smooth trajectory
+        
+        Args:
+            target_mm: Target position [mm]
+            wait: Whether to wait for motion to complete
+            timeout: Maximum time to wait [s]
+        
+        Returns:
+            True if successful
+        """
+        target_deg = target_mm * DEGREE_PER_MM
+        print(f"[Motion] Converting {target_mm:.3f}mm -> {target_deg:.2f}°")
+        return self.move_to_position(target_deg, wait=wait, timeout=timeout)
+    
+    def move_relative_mm(self, delta_mm: float, **kwargs) -> bool:
+        """
+        Move relative distance in millimeters [mm]
+        
+        Args:
+            delta_mm: Relative distance to move [mm] (positive or negative)
+            **kwargs: Additional arguments passed to move_to_position_mm()
+        
+        Returns:
+            True if successful
+        """
+        current_mm = self.get_position_mm()
+        if current_mm is None:
+            print("[Error] Failed to get current position")
+            return False
+        
+        target_mm = current_mm + delta_mm
+        print(f"[Motion] Relative move: {current_mm:.3f}mm + {delta_mm:.3f}mm -> {target_mm:.3f}mm")
+        return self.move_to_position_mm(target_mm, **kwargs)
 
 
 def main():
@@ -458,13 +510,15 @@ def main():
     print(f"  Max Acceleration: {profile.max_acceleration}°/s²")
     print()
     print("Commands:")
-    print("  m <pos>  - Move to position with smooth trajectory")
-    print("  e        - Enable motor")
-    print("  d        - Disable motor")
-    print("  c        - Clear errors")
-    print("  r        - Read current position")
-    print("  s        - Show status")
-    print("  q        - Quit")
+    print("  m <pos>   - Move to position [°] with smooth trajectory")
+    print("  mm <pos>  - Move to position [mm] with smooth trajectory")
+    print("  mmr <d>   - Relative move [mm]")
+    print("  e         - Enable motor")
+    print("  d         - Disable motor")
+    print("  c         - Clear errors")
+    print("  r         - Read current position [°] and [mm]")
+    print("  s         - Show status")
+    print("  q         - Quit")
     print()
     
     while True:
@@ -504,10 +558,25 @@ def main():
             
             elif cmd == 'r':
                 pos = motor.get_position()
+                pos_mm = motor.get_position_mm()
                 if pos is not None:
-                    print(f"Current position: {pos:.4f}°")
+                    print(f"Current position: {pos:.4f}° ({pos_mm:.4f}mm)")
                 else:
                     print("Failed to read position")
+            
+            elif cmd == 'mm' and len(parts) >= 2:
+                try:
+                    target = float(parts[1])
+                    motor.move_to_position_mm(target, wait=True)
+                except ValueError:
+                    print("Usage: mm <position_in_mm>")
+            
+            elif cmd == 'mmr' and len(parts) >= 2:
+                try:
+                    delta = float(parts[1])
+                    motor.move_relative_mm(delta, wait=True)
+                except ValueError:
+                    print("Usage: mmr <delta_in_mm>")
             
             elif cmd == 's':
                 error = motor.get_error_status()
@@ -521,8 +590,9 @@ def main():
                 if enabled is not None:
                     print(f"Enabled: {'Yes' if enabled else 'No'}")
                 pos = motor.get_position()
+                pos_mm = motor.get_position_mm()
                 if pos is not None:
-                    print(f"Position: {pos:.4f}°")
+                    print(f"Position: {pos:.4f}° ({pos_mm:.4f}mm)")
             
             else:
                 print("Unknown command or missing argument")

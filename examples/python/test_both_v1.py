@@ -41,6 +41,10 @@ KINCO_NMT_ID = 0x000
 KINCO_GEAR_RATIO = 16384
 KINCO_RPM_TO_UNITS = (65536 * 512) / 1875
 
+# Unit conversion constants for WHJ linear motion
+MM_PER_DEGREE = 0.018       # 1000° = 18.0mm, so 1° = 0.018mm
+DEGREE_PER_MM = 1000.0 / 18.0  # 1mm = 55.556°
+
 _global_driver = None
 
 
@@ -60,7 +64,13 @@ atexit.register(cleanup)
 # WHJ 控制器（基于 whj_motion_controller.py）
 # ============================================================================
 class WHJMotionController:
-    """WHJ 运动控制器 - 带梯形轨迹规划"""
+    """WHJ 运动控制器 - 带梯形轨迹规划
+    
+    Position units: [°] degrees or [mm] millimeters
+    Speed units: [rpm] revolutions per minute
+    
+    Conversion: 1000° = 18.0mm, so 1° = 0.018mm
+    """
     
     USE_BRS = True
     
@@ -98,7 +108,11 @@ class WHJMotionController:
         return None
     
     def get_position(self, filter_can=False):
-        """读取位置 - filter_can: 运动时过滤 CAN 帧"""
+        """读取位置 [°] - filter_can: 运动时过滤 CAN 帧
+        
+        Returns:
+            float: Current position in degrees [°], or None if read fails
+        """
         cmd = WHJProtocol.build_read_frame(WHJ_ID, Register.CUR_POSITION_L, 2)
         resp = self.send_command(cmd, filter_can=filter_can)
         if resp and len(resp) >= 6:
@@ -143,7 +157,13 @@ class WHJMotionController:
         return self.send_command(cmd) is not None
     
     def set_position(self, pos_deg, clear_buffer=False, filter_can=True):
-        """设置目标位置（直接）"""
+        """设置目标位置 [°]（直接）
+        
+        Args:
+            pos_deg: Target position in degrees [°]
+            clear_buffer: If True, clear buffer before sending
+            filter_can: If True, filter CAN frames during motion
+        """
         raw = int(pos_deg / 0.0001)
         
         # 低 16 位
@@ -159,6 +179,33 @@ class WHJMotionController:
         resp_h = self.send_command(cmd_h, timeout_ms=300, clear_buffer=False, filter_can=filter_can)
         return resp_h is not None
     
+    def get_position_mm(self, filter_can=False):
+        """
+        读取位置 [mm] - filter_can: 运动时过滤 CAN 帧
+        
+        Args:
+            filter_can: If True, filter out CAN frames during motion
+            
+        Returns:
+            float: Current position in millimeters [mm], or None if read fails
+        """
+        pos_deg = self.get_position(filter_can=filter_can)
+        if pos_deg is not None:
+            return pos_deg * MM_PER_DEGREE
+        return None
+    
+    def set_position_mm(self, pos_mm, clear_buffer=False, filter_can=True):
+        """
+        设置目标位置 [mm]（直接）
+        
+        Args:
+            pos_mm: Target position in millimeters [mm]
+            clear_buffer: If True, clear buffer before sending
+            filter_can: If True, filter CAN frames during motion
+        """
+        pos_deg = pos_mm * DEGREE_PER_MM
+        return self.set_position(pos_deg, clear_buffer=clear_buffer, filter_can=filter_can)
+    
     def clear_error(self):
         cmd = WHJProtocol.build_write_frame(WHJ_ID, Register.SYS_CLEAR_ERROR, 1)
         return self.send_command(cmd) is not None
@@ -168,6 +215,10 @@ class WHJMotionController:
         带小步进的移动（避免 >10° 错误）
         
         策略：运动时 filter_can=True 过滤 CAN 帧，查询时 filter_can=False
+        
+        Args:
+            target_pos: Target position in degrees [°]
+            max_step: Maximum step size per iteration in degrees [°]
         """
         # 获取当前位置（查询时不过滤）
         current = self.get_position(filter_can=False)
@@ -177,7 +228,9 @@ class WHJMotionController:
         
         distance = target_pos - current
         if abs(distance) < 0.5:
-            print(f"[WHJ] Already at {target_pos:.1f} deg")
+            current_mm = current * MM_PER_DEGREE
+            target_mm = target_pos * MM_PER_DEGREE
+            print(f"[WHJ] Already at {target_pos:.1f}° [{target_mm:.2f} mm]")
             return True
         
         # 确保使能（查询时不过滤）
@@ -187,7 +240,9 @@ class WHJMotionController:
                 return False
             time.sleep(0.2)
         
-        print(f"[WHJ] Moving {current:.1f} -> {target_pos:.1f} deg...")
+        current_mm = current * MM_PER_DEGREE
+        target_mm = target_pos * MM_PER_DEGREE
+        print(f"[WHJ] Moving {current:.1f}° [{current_mm:.2f} mm] -> {target_pos:.1f}° [{target_mm:.2f} mm]...")
         print("[WHJ] Filter CAN: ON during motion")
         
         # 步进参数
@@ -216,7 +271,8 @@ class WHJMotionController:
         final = self.get_position(filter_can=False)
         if final:
             error = abs(final - target_pos)
-            print(f"[WHJ] Done: {final:.1f} deg (err: {error:.1f})")
+            final_mm = final * MM_PER_DEGREE
+            print(f"[WHJ] Done: {final:.1f}° [{final_mm:.2f} mm] (err: {error:.1f}°)")
         return success_count > 0
 
 
@@ -298,15 +354,18 @@ def print_help():
     print("\n" + "=" * 60)
     print("Commands:")
     print("=" * 60)
-    print("  whj <pos>   - Move WHJ")
-    print("  kc <pos>    - Move Kinco")
-    print("  rwhj        - Read WHJ position")
-    print("  rkc         - Read Kinco position")
+    print("  whj <pos>   - Move WHJ to position [°] (degrees)")
+    print("  whjmm <pos> - Move WHJ to position [mm] (millimeters)")
+    print("  kc <pos>    - Move Kinco to position [°] (degrees)")
+    print("  rwhj        - Read WHJ position [°] and [mm]")
+    print("  rkc         - Read Kinco position [°]")
     print("  e           - Enable both")
     print("  dwhj        - Disable WHJ")
     print("  dkc         - Disable Kinco")
     print("  cwhj        - Clear WHJ errors")
     print("  q           - Quit")
+    print("=" * 60)
+    print(f"Unit conversion: 1000° = 18.0mm, 1° = {MM_PER_DEGREE}mm, 1mm = {DEGREE_PER_MM:.3f}°")
     print("=" * 60)
 
 
@@ -358,7 +417,8 @@ def main():
     
     pos = whj.get_position(filter_can=False)
     if pos:
-        print(f"[WHJ] Position: {pos:.2f} deg")
+        pos_mm = pos * MM_PER_DEGREE
+        print(f"[WHJ] Position: {pos:.2f}° [{pos_mm:.2f} mm]")
     else:
         print("[WHJ] Position read failed")
     
@@ -400,7 +460,15 @@ def main():
                     pos = float(parts[1])
                     whj.move_with_trajectory(pos)
                 except ValueError:
-                    print("Usage: whj <position>")
+                    print("Usage: whj <position_degrees>")
+            
+            elif cmd == 'whjmm' and len(parts) >= 2:
+                try:
+                    pos_mm = float(parts[1])
+                    pos_deg = pos_mm * DEGREE_PER_MM
+                    whj.move_with_trajectory(pos_deg)
+                except ValueError:
+                    print("Usage: whjmm <position_millimeters>")
             
             elif cmd == 'kc' and len(parts) >= 2:
                 try:
@@ -412,7 +480,11 @@ def main():
             elif cmd == 'rwhj':
                 pos = whj.get_position(filter_can=False)
                 en = whj.is_enabled(filter_can=False)
-                print(f"[WHJ] Pos: {pos:.2f} deg" if pos else "[WHJ] Read failed")
+                if pos is not None:
+                    pos_mm = pos * MM_PER_DEGREE
+                    print(f"[WHJ] Pos: {pos:.2f}° [{pos_mm:.2f} mm]")
+                else:
+                    print("[WHJ] Read failed")
                 print(f"[WHJ] Enabled: {en}" if en is not None else "[WHJ] Enable check failed")
             
             elif cmd == 'rkc':

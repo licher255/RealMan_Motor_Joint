@@ -17,6 +17,7 @@ RealMan WHJ Motion Controller - ORIGINAL VERSION (原始版本)
 - 实时位置反馈
 - 500Hz 位置指令更新率
 - 自动超时计算
+- 毫米(mm)与角度(°)双单位支持
 
 依赖:
 - core/zlgcan_driver.py
@@ -35,8 +36,11 @@ RealMan WHJ Motion Controller - ORIGINAL VERSION (原始版本)
     python motion_controller.py <motor_id>
 
 命令:
-    m <pos>  - 移动到指定位置（带轨迹规划）
-    r        - 读取当前位置
+    m <pos>  - 移动到指定位置 [°]（带轨迹规划）
+    mm <pos> - 移动到指定位置 [mm]（带轨迹规划）
+    mr <delta> - 相对移动 [mm]
+    r        - 读取当前位置 [°]
+    rm       - 读取当前位置 [mm]
     e        - 使能电机
     d        - 禁用电机
     c        - 清除错误
@@ -67,6 +71,11 @@ from enum import Enum
 from core import ZlgCanDriver, ZCANDeviceType
 from core.protocol import WHJProtocol, Register, WorkMode
 from drivers.whj_motor_control import WHJMotorController, parse_32bit_value
+
+
+# Unit conversion constants
+MM_PER_DEGREE = 0.018          # 1000° = 18.0mm
+DEGREE_PER_MM = 1000.0 / 18.0  # ~55.556°/mm
 
 
 # Global variables for cleanup
@@ -102,9 +111,9 @@ atexit.register(cleanup_resources)
 @dataclass
 class MotionProfile:
     """Motion profile parameters"""
-    max_velocity: float = 14400.0      # degrees/s
-    max_acceleration: float = 72000.0  # degrees/s^2
-    max_deceleration: float = 72000.0  # degrees/s^2
+    max_velocity: float = 14400.0      # [°/s] degrees/s
+    max_acceleration: float = 72000.0  # [°/s^2] degrees/s^2
+    max_deceleration: float = 72000.0  # [°/s^2] degrees/s^2
     
     # Jerk for S-curve (0 = trapezoidal, >0 = S-curve)
     jerk: float = 0.0
@@ -156,8 +165,8 @@ class TrapezoidalPlanner:
         Plan a trapezoidal trajectory
         
         Args:
-            start_pos: Starting position in degrees
-            target_pos: Target position in degrees
+            start_pos: Starting position [°] in degrees
+            target_pos: Target position [°] in degrees
         """
         self.reset()
         
@@ -228,7 +237,7 @@ class TrapezoidalPlanner:
         Update trajectory and get next position setpoint
         
         Returns:
-            (position, velocity, finished)
+            (position [°], velocity [°/s], finished)
         """
         if self.state == TrajectoryState.IDLE:
             return self.current_pos, 0.0, False
@@ -300,6 +309,10 @@ class WHJMotionController(WHJMotorController):
     
     Wraps the base WHJMotorController with trapezoidal velocity profiles
     to prevent motor overheat from sudden large position changes.
+    
+    Unit conversions:
+        - Position: [°] degrees or [mm] millimeters
+        - Velocity: [°/s] degrees/second or [rpm] revolutions/minute
     """
     
     def __init__(self, driver, motor_id: int, profile: Optional[MotionProfile] = None):
@@ -309,12 +322,33 @@ class WHJMotionController(WHJMotorController):
         self.running = False
         self.update_interval = 0.002  # 500Hz update rate
     
+    def get_position(self) -> Optional[float]:
+        """
+        Get current position in degrees [°]
+        
+        Returns:
+            Position [°] in degrees, or None if failed
+        """
+        return super().get_position()
+    
+    def get_position_mm(self) -> Optional[float]:
+        """
+        Get current position in millimeters [mm]
+        
+        Returns:
+            Position [mm] in millimeters, or None if failed
+        """
+        pos_deg = self.get_position()
+        if pos_deg is None:
+            return None
+        return pos_deg * MM_PER_DEGREE
+    
     def move_to_position(self, target_pos: float, wait: bool = True, timeout: float = None) -> bool:
         """
         Move to target position with smooth trajectory
         
         Args:
-            target_pos: Target position in degrees
+            target_pos: Target position [°] in degrees
             wait: Whether to wait for motion to complete
             timeout: Maximum time to wait (seconds)
         
@@ -434,6 +468,42 @@ class WHJMotionController(WHJMotorController):
         finally:
             self.running = False
     
+    def move_to_position_mm(self, target_mm: float, wait: bool = True, timeout: float = None) -> bool:
+        """
+        Move to target position in millimeters [mm] with smooth trajectory
+        
+        Args:
+            target_mm: Target position [mm] in millimeters
+            wait: Whether to wait for motion to complete
+            timeout: Maximum time to wait (seconds)
+        
+        Returns:
+            True if successful
+        """
+        target_deg = target_mm * DEGREE_PER_MM
+        print(f"[Motion] Converting {target_mm:.3f} mm -> {target_deg:.2f}°")
+        return self.move_to_position(target_deg, wait=wait, timeout=timeout)
+    
+    def move_relative_mm(self, delta_mm: float, **kwargs) -> bool:
+        """
+        Move relative distance in millimeters [mm]
+        
+        Args:
+            delta_mm: Relative distance [mm] in millimeters (positive or negative)
+            **kwargs: Additional arguments passed to move_to_position_mm()
+        
+        Returns:
+            True if successful
+        """
+        current_mm = self.get_position_mm()
+        if current_mm is None:
+            print("[Error] Failed to get current position")
+            return False
+        
+        target_mm = current_mm + delta_mm
+        print(f"[Motion] Relative move: {current_mm:.3f} mm + {delta_mm:+.3f} mm -> {target_mm:.3f} mm")
+        return self.move_to_position_mm(target_mm, **kwargs)
+    
     def stop(self):
         """Stop current motion"""
         self.running = False
@@ -449,6 +519,7 @@ def main():
     print("RealMan WHJ Motion Controller (WHJMotionController)")
     print("=" * 70)
     print(f"Motor ID: {motor_id}")
+    print(f"Unit Conversion: 1° = {MM_PER_DEGREE} mm, 1 mm = {DEGREE_PER_MM:.3f}°")
     print()
     
     # Initialize CAN
@@ -466,8 +537,8 @@ def main():
     
     # Create motion controller with conservative profile
     profile = MotionProfile(
-        max_velocity=1800.0,      # 180°/s (3 RPM) - conservative
-        max_acceleration=720.0,  # 360°/s^2
+        max_velocity=1800.0,      # 180°/s (3 RPM) [°/s] - conservative
+        max_acceleration=720.0,  # 360°/s^2 [°/s^2]
         max_deceleration=720.0
     )
     
@@ -489,13 +560,16 @@ def main():
     print(f"  Max Acceleration: {profile.max_acceleration}°/s²")
     print()
     print("Commands:")
-    print("  m <pos>  - Move to position with smooth trajectory")
-    print("  e        - Enable motor")
-    print("  d        - Disable motor")
-    print("  c        - Clear errors")
-    print("  r        - Read current position")
-    print("  s        - Show status")
-    print("  q        - Quit")
+    print("  m <pos>    - Move to position [°] with smooth trajectory")
+    print("  mm <pos>   - Move to position [mm] with smooth trajectory")
+    print("  mr <delta> - Move relative distance [mm]")
+    print("  e          - Enable motor")
+    print("  d          - Disable motor")
+    print("  c          - Clear errors")
+    print("  r          - Read current position [°]")
+    print("  rm         - Read current position [mm]")
+    print("  s          - Show status")
+    print("  q          - Quit")
     print()
     
     while True:
@@ -533,10 +607,31 @@ def main():
                 except ValueError:
                     print("Usage: m <position_in_degrees>")
             
+            elif cmd == 'mm' and len(parts) >= 2:
+                try:
+                    target_mm = float(parts[1])
+                    motor.move_to_position_mm(target_mm, wait=True)
+                except ValueError:
+                    print("Usage: mm <position_in_millimeters>")
+            
+            elif cmd == 'mr' and len(parts) >= 2:
+                try:
+                    delta_mm = float(parts[1])
+                    motor.move_relative_mm(delta_mm, wait=True)
+                except ValueError:
+                    print("Usage: mr <relative_distance_mm>")
+            
             elif cmd == 'r':
                 pos = motor.get_position()
                 if pos is not None:
                     print(f"Current position: {pos:.4f}°")
+                else:
+                    print("Failed to read position")
+            
+            elif cmd == 'rm':
+                pos_mm = motor.get_position_mm()
+                if pos_mm is not None:
+                    print(f"Current position: {pos_mm:.4f} mm")
                 else:
                     print("Failed to read position")
             
@@ -553,7 +648,7 @@ def main():
                     print(f"Enabled: {'Yes' if enabled else 'No'}")
                 pos = motor.get_position()
                 if pos is not None:
-                    print(f"Position: {pos:.4f}°")            
+                    print(f"Position: {pos:.4f}° ({pos * MM_PER_DEGREE:.4f} mm)")            
             else:
                 print("Unknown command or missing argument")
         

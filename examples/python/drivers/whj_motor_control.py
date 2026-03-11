@@ -13,6 +13,11 @@ from core import ZlgCanDriver, ZCANDeviceType
 from core.protocol import WHJProtocol, Register, WorkMode, ErrorCode
 
 
+# Unit conversion constants
+MM_PER_DEGREE = 0.018  # 1000° = 18.0mm
+DEGREE_PER_MM = 1000.0 / 18.0
+
+
 def parse_32bit_value(low, high):
     """Parse two 16-bit values to signed 32-bit"""
     val = (high << 16) | low
@@ -22,7 +27,13 @@ def parse_32bit_value(low, high):
 
 
 class WHJMotorController:
-    """WHJ Motor Controller with proper initialization"""
+    """WHJ Motor Controller with proper initialization
+    
+    Unit conventions:
+    - Position: [°] (degrees) or [mm] (millimeters)
+    - Speed: [rpm] (revolutions per minute)
+    - Current: [mA] (milliamperes)
+    """
     
     # 类级别设置：是否启用 CAN FD 的 Bitrate Switching
     # 注意：BRS=False 会导致某些设备发送失败，必须保持 True
@@ -245,7 +256,11 @@ class WHJMotorController:
         return modes.get(mode, f"UNKNOWN ({mode})")
     
     def get_position(self):
-        """Get current position"""
+        """Get current position [°]
+        
+        Returns:
+            Current position in degrees [°], or None if failed
+        """
         cmd = WHJProtocol.build_read_frame(self.motor_id, Register.CUR_POSITION_L, 2)
         resp, err = self.send_command(cmd)
         
@@ -256,6 +271,17 @@ class WHJMotorController:
         high = resp[4] | (resp[5] << 8)
         raw = parse_32bit_value(low, high)
         return raw * 0.0001
+    
+    def get_position_mm(self):
+        """Get current position [mm]
+        
+        Returns:
+            Current position in millimeters [mm], or None if failed
+        """
+        pos_deg = self.get_position()
+        if pos_deg is None:
+            return None
+        return pos_deg * MM_PER_DEGREE
     
     def enable(self, enable=True):
         """Enable or disable motor driver"""
@@ -292,7 +318,14 @@ class WHJMotorController:
         return resp is not None
     
     def set_target_position(self, position_deg):
-        """Set target position"""
+        """Set target position [°]
+        
+        Args:
+            position_deg: Target position in degrees [°]
+        
+        Returns:
+            True if successful, False otherwise
+        """
         raw = int(position_deg / 0.0001)
         
         # Send low 16 bits
@@ -304,6 +337,18 @@ class WHJMotorController:
         resp2, _ = self.send_command(cmd2)
         
         return resp1 is not None and resp2 is not None
+    
+    def set_target_position_mm(self, position_mm):
+        """Set target position [mm]
+        
+        Args:
+            position_mm: Target position in millimeters [mm]
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        position_deg = position_mm * DEGREE_PER_MM
+        return self.set_target_position(position_deg)
 
 
 def main():
@@ -376,18 +421,25 @@ def main():
     if pos is not None:
         print(f"Current Position: {pos:.4f}°")
     
+    # Get position in mm
+    pos_mm = motor.get_position_mm()
+    if pos_mm is not None:
+        print(f"Current Position: {pos_mm:.4f} mm")
+    
     print("-" * 60)
     print()
     
     # Interactive control
     print("Commands:")
-    print("  e  - Enable driver")
-    print("  d  - Disable driver")
-    print("  c  - Clear errors")
-    print("  p  - Go to position (e.g., p 90)")
-    print("  r  - Read current position")
-    print("  s  - Show status")
-    print("  q  - Quit")
+    print("  e    - Enable driver")
+    print("  d    - Disable driver")
+    print("  c    - Clear errors")
+    print("  p    - Go to position [°] (e.g., p 90)")
+    print("  m    - Go to position [mm] (e.g., m 10.0)")
+    print("  r    - Read current position [°]")
+    print("  mm   - Read current position [mm]")
+    print("  s    - Show status")
+    print("  q    - Quit")
     print()
     
     while True:
@@ -425,10 +477,27 @@ def main():
                 except:
                     print("Usage: p <position_in_degrees>")
             
+            elif cmd.startswith('m '):
+                try:
+                    target_mm = float(cmd.split()[1])
+                    if motor.set_target_position_mm(target_mm):
+                        print(f"Target position set to {target_mm} mm")
+                    else:
+                        print("Failed to set position")
+                except:
+                    print("Usage: m <position_in_mm>")
+            
             elif cmd == 'r':
                 pos = motor.get_position()
                 if pos is not None:
                     print(f"Current position: {pos:.4f}°")
+                else:
+                    print("Failed to read position")
+            
+            elif cmd == 'mm':
+                pos_mm = motor.get_position_mm()
+                if pos_mm is not None:
+                    print(f"Current position: {pos_mm:.4f} mm")
                 else:
                     print("Failed to read position")
             
@@ -443,6 +512,9 @@ def main():
                 pos = motor.get_position()
                 if pos is not None:
                     print(f"Position: {pos:.4f}°")
+                pos_mm = motor.get_position_mm()
+                if pos_mm is not None:
+                    print(f"Position: {pos_mm:.4f} mm")
             
             else:
                 print("Unknown command")
