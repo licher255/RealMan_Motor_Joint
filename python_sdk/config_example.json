@@ -1,0 +1,20 @@
+{
+  "can": {
+    "device_type": "USBCANFD_MINI",
+    "channel": 0,
+    "arbitration_bps": 1000000,
+    "data_bps": 5000000,
+    "internal_resistance": true
+  },
+  "whj_motors": {
+    "7": {
+      "motor_id": 7,
+      "max_velocity": 500.0,
+      "max_acceleration": 250.0,
+      "max_deceleration": 250.0,
+      "mm_per_degree": 0.018,
+      "degree_per_mm": 55.5556
+    }
+  },
+  "log_level": "INFO"
+}

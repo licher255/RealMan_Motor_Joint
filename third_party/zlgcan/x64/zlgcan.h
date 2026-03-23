@@ -132,9 +132,9 @@ typedef UINT ZCAN_LAST_ERROR_STATUS;
 
 
 typedef UINT ZCAN_UDS_DATA_DEF;
-#define DEF_CAN_UDS_DATA                    1 // CAN/CANFD UDSÊý¾Ý
-#define DEF_LIN_UDS_DATA                    2 // LIN UDSÊý¾Ý
-#define DEF_DOIP_UDS_DATA                   3 // DOIP UDSÊý¾Ý(ÔÝ²»Ö§³Ö)    
+#define DEF_CAN_UDS_DATA                    1 // CAN/CANFD UDSï¿½ï¿½ï¿½ï¿½
+#define DEF_LIN_UDS_DATA                    2 // LIN UDSï¿½ï¿½ï¿½ï¿½
+#define DEF_DOIP_UDS_DATA                   3 // DOIP UDSï¿½ï¿½ï¿½ï¿½(ï¿½Ý²ï¿½Ö§ï¿½ï¿½)    
 
 #define CMD_DESIP                           0
 #define CMD_DESPORT                         1
@@ -154,18 +154,18 @@ typedef UINT ZCAN_UDS_DATA_DEF;
 #define TYPE_ALL_DATA                       2
 
 
-//¶¯Ì¬ÅäÖÃ ³Ö¾ÃÅäÖÃ BEGIN
-#define	ZCAN_DYNAMIC_CONFIG_DEVNAME "DYNAMIC_CONFIG_DEVNAME"// Éè±¸Ãû£¬×î³¤Îª32×Ö½Ú£¨°üÀ¨¡¯\0¡¯£©£¬CANFDNET - 200UÄ¬ÈÏÖµÎª¡°CANFDNET - 200U¡±£¬CANFDNET - 100MINIÄ¬ÈÏÖµÎª¡°CANFDNET - 100MINI¡±
-//CANµÄÍ¨µÀÅäÖÃÐÅÏ¢(CAN%dÐè½øÐÐ¸ñÊ½»¯ÉùÃ÷Í¨µÀ ·¶Î§ÊÇ0-7)
-#define	ZCAN_DYNAMIC_CONFIG_CAN_ENABLE "DYNAMIC_CONFIG_CAN%d_ENABLE"// Í¨µÀÊ¹ÄÜ£»1£ºÊ¹ÄÜ£¬0£ºÊ§ÄÜ£»CANFDNETÏµÁÐ²úÆ·Í¨µÀÄ¬ÈÏÊ¹ÄÜ¡£
-#define	ZCAN_DYNAMIC_CONFIG_CAN_MODE "DYNAMIC_CONFIG_CAN%d_MODE"// ¹¤×÷Ä£Ê½£¬Ä¬ÈÏÕý³£Ä£Ê½£»0£ºÕý³£Ä£Ê½£»1£ºÖ»ÌýÄ£Ê½¡£
-#define	ZCAN_DYNAMIC_CONFIG_CAN_TXATTEMPTS "DYNAMIC_CONFIG_CAN%d_TXATTEMPTS"// ·¢ËÍÊ§°ÜÊÇ·ñÖØ´«£º0£º·¢ËÍÊ§°Ü²»ÖØ´«1£º·¢ËÍÊ§°ÜÖØ´«£¬Ö±µ½×ÜÏß¹Ø±Õ£¨CANFDNET - 100 / 200ÎÞ´ËÏîÅäÖÃ£©
-#define	ZCAN_DYNAMIC_CONFIG_CAN_NOMINALBAUD "DYNAMIC_CONFIG_CAN%d_NOMINALBAUD"//CAN²¨ÌØÂÊ»òCANFDÖÙ²ÃÓò²¨ÌØÂÊ£»
-#define	ZCAN_DYNAMIC_CONFIG_CAN_DATABAUD "DYNAMIC_CONFIG_CAN%d_DATABAUD"// CANFDÊý¾ÝÓò²¨ÌØÂÊ£»
-#define	ZCAN_DYNAMIC_CONFIG_CAN_USERES "DYNAMIC_CONFIG_CAN%d_USERES"// ÖÕ¶Ëµç×è¿ª¹Ø£»0£º¹Ø±Õ£»1£º´ò¿ª¡£
-#define	ZCAN_DYNAMIC_CONFIG_CAN_SNDCFG_INTERVAL "DYNAMIC_CONFIG_CAN%d_SNDCFG_INTERVAL"// ±¨ÎÄ·¢ËÍ¼ä¸ô£¬0~255ms
-#define	ZCAN_DYNAMIC_CONFIG_CAN_BUSRATIO_ENABLE "DYNAMIC_CONFIG_CAN%d_BUSRATIO_ENABLE"// ×ÜÏßÀûÓÃÂÊÊ¹ÄÜ£¬Ê¹ÄÜºó£¬½«ÖÜÆÚ·¢ËÍ×ÜÏßÀûÓÃÂÊµ½Éè¶¨µÄTCP/UDPÁ¬½Ó¡£1:Ê¹ÄÜ£¬0£ºÊ§ÄÜ
-#define	ZCAN_DYNAMIC_CONFIG_CAN_BUSRATIO_PERIOD "DYNAMIC_CONFIG_CAN%d_BUSRATIO_PERIOD"// ×ÜÏßÀûÓÃÂÊ²É¼¯ÖÜÆÚ£¬È¡Öµ200~2000ms
+//ï¿½ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½ BEGIN
+#define	ZCAN_DYNAMIC_CONFIG_DEVNAME "DYNAMIC_CONFIG_DEVNAME"// ï¿½è±¸ï¿½ï¿½ï¿½ï¿½ï¿½î³¤Îª32ï¿½Ö½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½CANFDNET - 200UÄ¬ï¿½ï¿½ÖµÎªï¿½ï¿½CANFDNET - 200Uï¿½ï¿½ï¿½ï¿½CANFDNET - 100MINIÄ¬ï¿½ï¿½ÖµÎªï¿½ï¿½CANFDNET - 100MINIï¿½ï¿½
+//CANï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢(CAN%dï¿½ï¿½ï¿½ï¿½Ð¸ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ ï¿½ï¿½Î§ï¿½ï¿½0-7)
+#define	ZCAN_DYNAMIC_CONFIG_CAN_ENABLE "DYNAMIC_CONFIG_CAN%d_ENABLE"// Í¨ï¿½ï¿½Ê¹ï¿½Ü£ï¿½1ï¿½ï¿½Ê¹ï¿½Ü£ï¿½0ï¿½ï¿½Ê§ï¿½Ü£ï¿½CANFDNETÏµï¿½Ð²ï¿½Æ·Í¨ï¿½ï¿½Ä¬ï¿½ï¿½Ê¹ï¿½Ü¡ï¿½
+#define	ZCAN_DYNAMIC_CONFIG_CAN_MODE "DYNAMIC_CONFIG_CAN%d_MODE"// ï¿½ï¿½ï¿½ï¿½Ä£Ê½ï¿½ï¿½Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½ï¿½ï¿½1ï¿½ï¿½Ö»ï¿½ï¿½Ä£Ê½ï¿½ï¿½
+#define	ZCAN_DYNAMIC_CONFIG_CAN_TXATTEMPTS "DYNAMIC_CONFIG_CAN%d_TXATTEMPTS"// ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ø´ï¿½ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü²ï¿½ï¿½Ø´ï¿½1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½ï¿½Ø´ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ß¹Ø±Õ£ï¿½CANFDNET - 100 / 200ï¿½Þ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½
+#define	ZCAN_DYNAMIC_CONFIG_CAN_NOMINALBAUD "DYNAMIC_CONFIG_CAN%d_NOMINALBAUD"//CANï¿½ï¿½ï¿½ï¿½ï¿½Ê»ï¿½CANFDï¿½Ù²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê£ï¿½
+#define	ZCAN_DYNAMIC_CONFIG_CAN_DATABAUD "DYNAMIC_CONFIG_CAN%d_DATABAUD"// CANFDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê£ï¿½
+#define	ZCAN_DYNAMIC_CONFIG_CAN_USERES "DYNAMIC_CONFIG_CAN%d_USERES"// ï¿½Õ¶Ëµï¿½ï¿½è¿ªï¿½Ø£ï¿½0ï¿½ï¿½ï¿½Ø±Õ£ï¿½1ï¿½ï¿½ï¿½ò¿ª¡ï¿½
+#define	ZCAN_DYNAMIC_CONFIG_CAN_SNDCFG_INTERVAL "DYNAMIC_CONFIG_CAN%d_SNDCFG_INTERVAL"// ï¿½ï¿½ï¿½Ä·ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½0~255ms
+#define	ZCAN_DYNAMIC_CONFIG_CAN_BUSRATIO_ENABLE "DYNAMIC_CONFIG_CAN%d_BUSRATIO_ENABLE"// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½Ü£ï¿½Ê¹ï¿½Üºó£¬½ï¿½ï¿½ï¿½ï¿½Ú·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½è¶¨ï¿½ï¿½TCP/UDPï¿½ï¿½ï¿½Ó¡ï¿½1:Ê¹ï¿½Ü£ï¿½0ï¿½ï¿½Ê§ï¿½ï¿½
+#define	ZCAN_DYNAMIC_CONFIG_CAN_BUSRATIO_PERIOD "DYNAMIC_CONFIG_CAN%d_BUSRATIO_PERIOD"// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê²É¼ï¿½ï¿½ï¿½ï¿½Ú£ï¿½È¡Öµ200~2000ms
 
 typedef struct tagZCAN_DYNAMIC_CONFIG_DATA
 {
@@ -177,47 +177,47 @@ typedef struct tagZCAN_DYNAMIC_CONFIG_DATA
 #define CANFD_DATA_LEN_MAX 64
 
 typedef UINT DynamicConfigDataType;
-#define DYNAMIC_CONFIG_CAN     0  //CAnÍ¨µÀÉèÖÃ 
-#define DYNAMIC_CONFIG_FILTER  1  //ÂË²¨ÉèÖÃ    
+#define DYNAMIC_CONFIG_CAN     0  //CAnÍ¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
+#define DYNAMIC_CONFIG_FILTER  1  //ï¿½Ë²ï¿½ï¿½ï¿½ï¿½ï¿½    
 
 union unionCANFDFilterRulePresent
 {
 	struct {
-		unsigned int bChnl : 1;        // Í¨µÀÌõ¼þ ÊÇ·ñ´æÔÚ
-		unsigned int bFD : 1;          // CANFD±êÊ¶ ÊÇ·ñ´æÔÚ
-		unsigned int bEXT : 1;         // ±ê×¼Ö¡/À©Õ¹Ö¡±êÊ¶ ÊÇ·ñ´æÔÚ
-		unsigned int bRTR : 1;         // Êý¾ÝÖ¡/Ô¶³ÌÖ¡±êÊ¶ ÊÇ·ñ´æÔÚ
-		unsigned int bLen : 1;         // ³¤¶È  ÊÇ·ñ´æÔÚ
-		unsigned int bID : 1;          // ÆðÊ¼ID/½áÊøID ÊÇ·ñ´æÔÚ
-		unsigned int bTime : 1;        // ÆðÊ¼Ê±¼ä/½áÊøÊ±¼ä ÊÇ·ñ´æÔÚ
-		unsigned int bFilterMask : 1;  // ±¨ÎÄÊý¾Ý¹ýÂË/ÆÁ±Î ÊÇ·ñ´æÔÚ
-		unsigned int bErr : 1;         // ´íÎó±¨ÎÄ CAN/CANFD±êÖ¾ ÊÇ·ñ´æÔÚ
-		unsigned int nReserved : 23;   // ±£Áô
+		unsigned int bChnl : 1;        // Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
+		unsigned int bFD : 1;          // CANFDï¿½ï¿½Ê¶ ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
+		unsigned int bEXT : 1;         // ï¿½ï¿½×¼Ö¡/ï¿½ï¿½Õ¹Ö¡ï¿½ï¿½Ê¶ ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
+		unsigned int bRTR : 1;         // ï¿½ï¿½ï¿½ï¿½Ö¡/Ô¶ï¿½ï¿½Ö¡ï¿½ï¿½Ê¶ ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
+		unsigned int bLen : 1;         // ï¿½ï¿½ï¿½ï¿½  ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
+		unsigned int bID : 1;          // ï¿½ï¿½Ê¼ID/ï¿½ï¿½ï¿½ï¿½ID ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
+		unsigned int bTime : 1;        // ï¿½ï¿½Ê¼Ê±ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
+		unsigned int bFilterMask : 1;  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¹ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
+		unsigned int bErr : 1;         // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ CAN/CANFDï¿½ï¿½Ö¾ ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
+		unsigned int nReserved : 23;   // ï¿½ï¿½ï¿½ï¿½
 	}unionValue;
 	unsigned int     rawValue;
 };
-// µ¥Ìõ¹ýÂË¹æÔò£¬
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½ï¿½ï¿½
 struct CANFD_FILTER_RULE
 {
-	unionCANFDFilterRulePresent presentFlag;// ±êÊ¶¶ÔÓ¦µÄÊý¾ÝÊÇ·ñ´æÔÚ
-	int                         nErr;       // ÊÇ·ñ´íÎó±¨ÎÄ£¬´ËÌõ¼þÒ»¶¨´æÔÚ£¬±íÊ¾´ËÌõ¹ýÂËÊÇÕý³£Ö¡»¹ÊÇ´íÎóÖ¡,0:²»¹ýÂË´íÎóÖ¡ 1:¹ýÂË´íÎóÖ¡
-	int                         nChnl;      // Í¨µÀ
-	int                         nFD;        // CANFD±êÊ¶£¬0£ºCAN; 1:CANFD
-	int                         nExt;       // À©Õ¹Ö¡±êÊ¶, 0:±ê×¼Ö¡ 1:À©Õ¹Ö¡
-	int                         nRtr;       // Ô¶³ÌÖ¡±êÊ¶, 0:Êý¾ÝÖ¡ 1:Ô¶³ÌÖ¡
-	int                         nLen;       // ±¨ÎÄ³¤¶È£¬0-64
-	int                         nBeginID;   // ÆðÊ¼ID
-	int                         nEndID;     // ½áÊøID£¬ÆðÊ¼IDÖµ±ØÐë<=½áÊøID£¬ÓëÆðÊ¼ID³É¶Ô´æÔÚ
-	int                         nBeginTime; // ¹ýÂËÆðÊ¼Ê±¼ä£¬µ¥Î»s£¬È¡Öµ0-(24*60*60-1)
-	int                         nEndTime;   // ¹ýÂË½áÊøÊ±¼ä£¬µ¥Î»s£¬È¡Öµ0-(24*60*60-1)£¬ÓëÆðÊ¼Ê±¼ä³É¶Ô´æÔÚ
+	unionCANFDFilterRulePresent presentFlag;// ï¿½ï¿½Ê¶ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
+	int                         nErr;       // ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½Ç´ï¿½ï¿½ï¿½Ö¡,0:ï¿½ï¿½ï¿½ï¿½ï¿½Ë´ï¿½ï¿½ï¿½Ö¡ 1:ï¿½ï¿½ï¿½Ë´ï¿½ï¿½ï¿½Ö¡
+	int                         nChnl;      // Í¨ï¿½ï¿½
+	int                         nFD;        // CANFDï¿½ï¿½Ê¶ï¿½ï¿½0ï¿½ï¿½CAN; 1:CANFD
+	int                         nExt;       // ï¿½ï¿½Õ¹Ö¡ï¿½ï¿½Ê¶, 0:ï¿½ï¿½×¼Ö¡ 1:ï¿½ï¿½Õ¹Ö¡
+	int                         nRtr;       // Ô¶ï¿½ï¿½Ö¡ï¿½ï¿½Ê¶, 0:ï¿½ï¿½ï¿½ï¿½Ö¡ 1:Ô¶ï¿½ï¿½Ö¡
+	int                         nLen;       // ï¿½ï¿½ï¿½Ä³ï¿½ï¿½È£ï¿½0-64
+	int                         nBeginID;   // ï¿½ï¿½Ê¼ID
+	int                         nEndID;     // ï¿½ï¿½ï¿½ï¿½IDï¿½ï¿½ï¿½ï¿½Ê¼IDÖµï¿½ï¿½ï¿½ï¿½<=ï¿½ï¿½ï¿½ï¿½IDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼IDï¿½É¶Ô´ï¿½ï¿½ï¿½
+	int                         nBeginTime; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼Ê±ï¿½ä£¬ï¿½ï¿½Î»sï¿½ï¿½È¡Öµ0-(24*60*60-1)
+	int                         nEndTime;   // ï¿½ï¿½ï¿½Ë½ï¿½ï¿½ï¿½Ê±ï¿½ä£¬ï¿½ï¿½Î»sï¿½ï¿½È¡Öµ0-(24*60*60-1)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼Ê±ï¿½ï¿½É¶Ô´ï¿½ï¿½ï¿½
 	int                         nFilterDataLen;
 	int                         nMaskDataLen;
-	BYTE                        nFilterData[CANFD_DATA_LEN_MAX]; // ±¨ÎÄ¹ýÂËÊý¾Ý,uint8Êý×é£¬×î³¤64
-	BYTE                        nMaskData[CANFD_DATA_LEN_MAX];   // ±¨ÎÄÆÁ±ÎÊý¾Ý,uint8Êý×é£¬×î³¤64£¬Óë¹ýÂËÊý¾Ý³É¶Ô´æÔÚ
+	BYTE                        nFilterData[CANFD_DATA_LEN_MAX]; // ï¿½ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,uint8ï¿½ï¿½ï¿½é£¬ï¿½î³¤64
+	BYTE                        nMaskData[CANFD_DATA_LEN_MAX];   // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,uint8ï¿½ï¿½ï¿½é£¬ï¿½î³¤64ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³É¶Ô´ï¿½ï¿½ï¿½
 };
 typedef UINT enumCANFDFilterBlackWhiteList;
-#define CANFD_FILTER_BLACK_LIST  0        // ºÚÃûµ¥
-#define CANFD_FILTER_WHITE_LIST  1        // °×Ãûµ¥
+#define CANFD_FILTER_BLACK_LIST  0        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+#define CANFD_FILTER_WHITE_LIST  1        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 struct CANFD_FILTER_CFG
 {
@@ -225,27 +225,27 @@ struct CANFD_FILTER_CFG
 	enumCANFDFilterBlackWhiteList   enBlackWhiteList;
 	CANFD_FILTER_RULE				vecFilters[CANFD_FILTER_COUNT_MAX];
 };
-//Ä¿Ç°Ö»¸øÂË²¨Ê¹ÓÃ¡¢ºóÐø¿É¼¯³ÉÆäËûÄ£¿é
+//Ä¿Ç°Ö»ï¿½ï¿½ï¿½Ë²ï¿½Ê¹ï¿½Ã¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½
 typedef struct tagZCAN_DYNAMIC_CONFIG
 {
 	DynamicConfigDataType dynamicConfigDataType;
-	UINT                  isPersist;         // ÊÇ·ñÊÇ³Ö¾ÃÅäÖÃ£¨¼´Éè±¸µôµç±£´æÅäÖÃ£©¡¢TRUE-³Ö¾ÃÅäÖÃ FALSE-¶¯Ì¬ÅäÖÃ
+	UINT                  isPersist;         // ï¿½Ç·ï¿½ï¿½Ç³Ö¾ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½ï¿½è±¸ï¿½ï¿½ï¿½ç±£ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½TRUE-ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½ FALSE-ï¿½ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½
 	union
 	{
-		CANFD_FILTER_CFG filterCfg;          // dynamicConfigDataType = DYNAMIC_CONFIG_FILTERÊ±ÓÐÐ§
-		BYTE			 reserved[10*1024];  // ±£Áô
+		CANFD_FILTER_CFG filterCfg;          // dynamicConfigDataType = DYNAMIC_CONFIG_FILTERÊ±ï¿½ï¿½Ð§
+		BYTE			 reserved[10*1024];  // ï¿½ï¿½ï¿½ï¿½
 	}data;
 }ZCAN_DYNAMIC_CONFIG;
-//¶¯Ì¬ÅäÖÃ ³Ö¾ÃÅäÖÃ END
+//ï¿½ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½ END
 
 typedef void * DEVICE_HANDLE;
 typedef void * CHANNEL_HANDLE;
 
 typedef struct tagZCAN_DEVICE_INFO {
-    USHORT hw_Version;                      //Ó²¼þ°æ±¾
-    USHORT fw_Version;                      //¹Ì¼þ°æ±¾
-    USHORT dr_Version;                      //Çý¶¯°æ±¾
-    USHORT in_Version;                      //¶¯Ì¬¿â°æ±¾
+    USHORT hw_Version;                      //Ó²ï¿½ï¿½ï¿½æ±¾
+    USHORT fw_Version;                      //ï¿½Ì¼ï¿½ï¿½æ±¾
+    USHORT dr_Version;                      //ï¿½ï¿½ï¿½ï¿½ï¿½æ±¾
+    USHORT in_Version;                      //ï¿½ï¿½Ì¬ï¿½ï¿½æ±¾
     USHORT irq_Num;
     BYTE   can_Num;
     UCHAR  str_Serial_Num[20];
@@ -254,7 +254,7 @@ typedef struct tagZCAN_DEVICE_INFO {
 }ZCAN_DEVICE_INFO;
 
 typedef struct tagZCAN_CHANNEL_INIT_CONFIG {
-    UINT can_type;                          //type:TYPE_CAN TYPE_CANFD£¨can_typeµÄÉè±¸ÀàÐÍÖ»È¡¾öÓÚ²úÆ·Ó²¼þµÄÀàÐÍ£¬CANFDÏµÁÐµÄ²úÆ·±ØÐëÉèÖÃÎª1£¬±íÊ¾CANFDÉè±¸£©
+    UINT can_type;                          //type:TYPE_CAN TYPE_CANFDï¿½ï¿½can_typeï¿½ï¿½ï¿½è±¸ï¿½ï¿½ï¿½ï¿½Ö»È¡ï¿½ï¿½ï¿½Ú²ï¿½Æ·Ó²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½CANFDÏµï¿½ÐµÄ²ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª1ï¿½ï¿½ï¿½ï¿½Ê¾CANFDï¿½è±¸ï¿½ï¿½
     union
     {
         struct
@@ -338,12 +338,12 @@ typedef struct tagZCANFD_AUTO_TRANSMIT_OBJ{
     ZCAN_TransmitFD_Data obj;
 }ZCANFD_AUTO_TRANSMIT_OBJ, *PZCANFD_AUTO_TRANSMIT_OBJ;
 
-//ÓÃÓÚÉèÖÃ¶¨Ê±·¢ËÍ¶îÍâµÄ²ÎÊý, Ä¿Ç°Ö»Ö§³ÖUSBCANFD-X00UÏµÁÐÉè±¸
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¶ï¿½Ê±ï¿½ï¿½ï¿½Í¶ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½, Ä¿Ç°Ö»Ö§ï¿½ï¿½USBCANFD-X00UÏµï¿½ï¿½ï¿½è±¸
 typedef struct tagZCAN_AUTO_TRANSMIT_OBJ_PARAM
 {
-    USHORT index;                           // ¶¨Ê±·¢ËÍÖ¡µÄË÷Òý
-    USHORT type;                            // ²ÎÊýÀàÐÍ£¬Ä¿Ç°ÀàÐÍÖ»ÓÐ1£º±íÊ¾Æô¶¯ÑÓÊ±
-    UINT   value;                           // ²ÎÊýÊýÖµ
+    USHORT index;                           // ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    USHORT type;                            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½Ä¿Ç°ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½1ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±
+    UINT   value;                           // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
 }ZCAN_AUTO_TRANSMIT_OBJ_PARAM, *PZCAN_AUTO_TRANSMIT_OBJ_PARAM;
 
 //for zlg cloud
@@ -412,421 +412,421 @@ typedef struct tagTxTimeStamp
 {
     UINT64* pTxTimeStampBuffer;             //allocated by user, size:nBufferTimeStampCount * 8,unit:1us
     UINT    nBufferTimeStampCount;          //buffer timestamp count
-    int     nWaitTime;                      //Wait Time ms, -1±íÊ¾µÈµ½ÓÐÊý¾Ý²Å·µ»Ø
+    int     nWaitTime;                      //Wait Time ms, -1ï¿½ï¿½Ê¾ï¿½Èµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý²Å·ï¿½ï¿½ï¿½
 }TxTimeStamp;
 
 // Bus usage
 typedef struct tagBusUsage
 {
-    UINT64  nTimeStampBegin;                //²âÁ¿ÆðÊ¼Ê±¼ä´Á£¬µ¥Î»us
-    UINT64  nTimeStampEnd;                  //²âÁ¿½áÊøÊ±¼ä´Á£¬µ¥Î»us
-    BYTE    nChnl;                          //Í¨µÀ
-    BYTE    nReserved;                      //±£Áô
-    USHORT  nBusUsage;                      //×ÜÏßÀûÓÃÂÊ(%),×ÜÏßÀûÓÃÂÊ*100Õ¹Ê¾¡£È¡Öµ0~10000£¬Èç8050±íÊ¾80.50%
-    UINT    nFrameCount;                    //Ö¡ÊýÁ¿
+    UINT64  nTimeStampBegin;                //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»us
+    UINT64  nTimeStampEnd;                  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»us
+    BYTE    nChnl;                          //Í¨ï¿½ï¿½
+    BYTE    nReserved;                      //ï¿½ï¿½ï¿½ï¿½
+    USHORT  nBusUsage;                      //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(%),ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*100Õ¹Ê¾ï¿½ï¿½È¡Öµ0~10000ï¿½ï¿½ï¿½ï¿½8050ï¿½ï¿½Ê¾80.50%
+    UINT    nFrameCount;                    //Ö¡ï¿½ï¿½ï¿½ï¿½
 }BusUsage;
 
 enum eZCANErrorDEF
 {
-    //×ÜÏß´íÎóÀàÐÍ
-    ZCAN_ERR_TYPE_NO_ERR                = 0,        //ÎÞ´íÎó
-    ZCAN_ERR_TYPE_BUS_ERR               = 1,        //×ÜÏß´íÎó
-    ZCAN_ERR_TYPE_CONTROLLER_ERR        = 2,        //¿ØÖÆÆ÷´íÎó
-    ZCAN_ERR_TYPE_DEVICE_ERR            = 3,        //ÖÕ¶ËÉè±¸´íÎó
+    //ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_ERR_TYPE_NO_ERR                = 0,        //ï¿½Þ´ï¿½ï¿½ï¿½
+    ZCAN_ERR_TYPE_BUS_ERR               = 1,        //ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½
+    ZCAN_ERR_TYPE_CONTROLLER_ERR        = 2,        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_ERR_TYPE_DEVICE_ERR            = 3,        //ï¿½Õ¶ï¿½ï¿½è±¸ï¿½ï¿½ï¿½ï¿½
 
-    //½Úµã×´Ì¬
-    ZCAN_NODE_STATE_ACTIVE              = 1,        //×ÜÏß»ý¼«
-    ZCAN_NODE_STATE_WARNNING            = 2,        //×ÜÏß¸æ¾¯
-    ZCAN_NODE_STATE_PASSIVE             = 3,        //×ÜÏßÏû¼«
-    ZCAN_NODE_STATE_BUSOFF              = 4,        //×ÜÏß¹Ø±Õ
+    //ï¿½Úµï¿½×´Ì¬
+    ZCAN_NODE_STATE_ACTIVE              = 1,        //ï¿½ï¿½ï¿½ß»ï¿½ï¿½ï¿½
+    ZCAN_NODE_STATE_WARNNING            = 2,        //ï¿½ï¿½ï¿½ß¸æ¾¯
+    ZCAN_NODE_STATE_PASSIVE             = 3,        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_NODE_STATE_BUSOFF              = 4,        //ï¿½ï¿½ï¿½ß¹Ø±ï¿½
 
-    //×ÜÏß´íÎó×ÓÀàÐÍ, errType = ZCAN_ERR_TYPE_BUS_ERR
-    ZCAN_BUS_ERR_NO_ERR                 = 0,        //ÎÞ´íÎó
-    ZCAN_BUS_ERR_BIT_ERR                = 1,        //Î»´íÎó
-    ZCAN_BUS_ERR_ACK_ERR                = 2,        //Ó¦´ð´íÎó
-    ZCAN_BUS_ERR_CRC_ERR                = 3,        //CRC´íÎó
-    ZCAN_BUS_ERR_FORM_ERR               = 4,        //¸ñÊ½´íÎó
-    ZCAN_BUS_ERR_STUFF_ERR              = 5,        //Ìî³ä´íÎó
-    ZCAN_BUS_ERR_OVERLOAD_ERR           = 6,        //³¬ÔØ´íÎó
-    ZCAN_BUS_ERR_ARBITRATION_LOST       = 7,        //ÖÙ²Ã¶ªÊ§
-    ZCAN_BUS_ERR_NODE_STATE_CHAGE       = 8,        //×ÜÏß½Úµã±ä»¯
+    //ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, errType = ZCAN_ERR_TYPE_BUS_ERR
+    ZCAN_BUS_ERR_NO_ERR                 = 0,        //ï¿½Þ´ï¿½ï¿½ï¿½
+    ZCAN_BUS_ERR_BIT_ERR                = 1,        //Î»ï¿½ï¿½ï¿½ï¿½
+    ZCAN_BUS_ERR_ACK_ERR                = 2,        //Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_BUS_ERR_CRC_ERR                = 3,        //CRCï¿½ï¿½ï¿½ï¿½
+    ZCAN_BUS_ERR_FORM_ERR               = 4,        //ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_BUS_ERR_STUFF_ERR              = 5,        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_BUS_ERR_OVERLOAD_ERR           = 6,        //ï¿½ï¿½ï¿½Ø´ï¿½ï¿½ï¿½
+    ZCAN_BUS_ERR_ARBITRATION_LOST       = 7,        //ï¿½Ù²Ã¶ï¿½Ê§
+    ZCAN_BUS_ERR_NODE_STATE_CHAGE       = 8,        //ï¿½ï¿½ï¿½ß½Úµï¿½ä»¯
 
-    //¿ØÖÆÆ÷´íÎó, errType = ZCAN_ERR_TYPE_CONTROLLER_ERR
-    ZCAN_CONTROLLER_RX_FIFO_OVERFLOW    = 1,        //¿ØÖÆÆ÷½ÓÊÕFIFOÒç³ö
-    ZCAN_CONTROLLER_DRIVER_RX_BUFFER_OVERFLOW  = 2, //Çý¶¯½ÓÊÕ»º´æÒç³ö
-    ZCAN_CONTROLLER_DRIVER_TX_BUFFER_OVERFLOW  = 3, //Çý¶¯·¢ËÍ»º´æÒç³ö
-    ZCAN_CONTROLLER_INTERNAL_ERROR      = 4,        //¿ØÖÆÆ÷ÄÚ²¿´íÎó
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, errType = ZCAN_ERR_TYPE_CONTROLLER_ERR
+    ZCAN_CONTROLLER_RX_FIFO_OVERFLOW    = 1,        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½FIFOï¿½ï¿½ï¿½
+    ZCAN_CONTROLLER_DRIVER_RX_BUFFER_OVERFLOW  = 2, //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_CONTROLLER_DRIVER_TX_BUFFER_OVERFLOW  = 3, //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_CONTROLLER_INTERNAL_ERROR      = 4,        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½
 
-    //ÖÕ¶ËÉè±¸´íÎó, errType = ZCAN_ERR_TYPE_DEVICE_ERR
-    ZCAN_DEVICE_APP_RX_BUFFER_OVERFLOW = 1,         //ÖÕ¶ËÓ¦ÓÃ½ÓÊÕ»º´æÒç³ö
-    ZCAN_DEVICE_APP_TX_BUFFER_OVERFLOW = 2,         //ÖÕ¶ËÓ¦ÓÃ·¢ËÍ»º´æÒç³ö
-    ZCAN_DEVICE_APP_AUTO_SEND_FAILED   = 3,         //¶¨Ê±·¢ËÍÊ§°Ü
-    ZCAN_CONTROLLER_TX_FRAME_INVALID   = 4,         //·¢ËÍ±¨ÎÄÎÞÐ§
+    //ï¿½Õ¶ï¿½ï¿½è±¸ï¿½ï¿½ï¿½ï¿½, errType = ZCAN_ERR_TYPE_DEVICE_ERR
+    ZCAN_DEVICE_APP_RX_BUFFER_OVERFLOW = 1,         //ï¿½Õ¶ï¿½Ó¦ï¿½Ã½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_DEVICE_APP_TX_BUFFER_OVERFLOW = 2,         //ï¿½Õ¶ï¿½Ó¦ï¿½Ã·ï¿½ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_DEVICE_APP_AUTO_SEND_FAILED   = 3,         //ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½
+    ZCAN_CONTROLLER_TX_FRAME_INVALID   = 4,         //ï¿½ï¿½ï¿½Í±ï¿½ï¿½ï¿½ï¿½ï¿½Ð§
 };
 
 enum eZCANDataDEF
 {
-    //Êý¾ÝÀàÐÍ
-    ZCAN_DT_ZCAN_CAN_CANFD_DATA     = 1,            // CAN/CANFDÊý¾Ý
-    ZCAN_DT_ZCAN_ERROR_DATA         = 2,            // ´íÎóÊý¾Ý
-    ZCAN_DT_ZCAN_GPS_DATA           = 3,            // GPSÊý¾Ý
-    ZCAN_DT_ZCAN_LIN_DATA           = 4,            // LINÊý¾Ý
-    ZCAN_DT_ZCAN_BUSUSAGE_DATA      = 5,            // BusUsageÊý¾Ý
-    ZCAN_DT_ZCAN_LIN_ERROR_DATA     = 6,            // LIN´íÎóÊý¾Ý
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_DT_ZCAN_CAN_CANFD_DATA     = 1,            // CAN/CANFDï¿½ï¿½ï¿½ï¿½
+    ZCAN_DT_ZCAN_ERROR_DATA         = 2,            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    ZCAN_DT_ZCAN_GPS_DATA           = 3,            // GPSï¿½ï¿½ï¿½ï¿½
+    ZCAN_DT_ZCAN_LIN_DATA           = 4,            // LINï¿½ï¿½ï¿½ï¿½
+    ZCAN_DT_ZCAN_BUSUSAGE_DATA      = 5,            // BusUsageï¿½ï¿½ï¿½ï¿½
+    ZCAN_DT_ZCAN_LIN_ERROR_DATA     = 6,            // LINï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-    //·¢ËÍÑÓÊ±µ¥Î»
-    ZCAN_TX_DELAY_NO_DELAY          = 0,            // ÎÞ·¢ËÍÑÓÊ±
-    ZCAN_TX_DELAY_UNIT_MS           = 1,            // ·¢ËÍÑÓÊ±µ¥Î»ºÁÃë
-    ZCAN_TX_DELAY_UNIT_100US        = 2,            // ·¢ËÍÑÓÊ±µ¥Î»100Î¢Ãë(0.1ºÁÃë)
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Î»
+    ZCAN_TX_DELAY_NO_DELAY          = 0,            // ï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½Ê±
+    ZCAN_TX_DELAY_UNIT_MS           = 1,            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½
+    ZCAN_TX_DELAY_UNIT_100US        = 2,            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Î»100Î¢ï¿½ï¿½(0.1ï¿½ï¿½ï¿½ï¿½)
 
 };
 
 #pragma pack(push, 1)
 
-// CAN/CANFDÊý¾Ý
+// CAN/CANFDï¿½ï¿½ï¿½ï¿½
 typedef struct tagZCANCANFDData
 {
-    UINT64          timeStamp;                      // Ê±¼ä´Á,Êý¾Ý½ÓÊÕÊ±µ¥Î»Î¢Ãë(us),¶ÓÁÐÑÓÊ±·¢ËÍÊ±,Êý¾Ýµ¥Î»È¡¾öÓÚflag.unionVal.txDelay
+    UINT64          timeStamp;                      // Ê±ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Î»Î¢ï¿½ï¿½(us),ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½Ýµï¿½Î»È¡ï¿½ï¿½ï¿½ï¿½flag.unionVal.txDelay
     union
     {
         struct{
-            UINT    frameType : 2;                  // Ö¡ÀàÐÍ, 0:CANÖ¡, 1:CANFDÖ¡
-            UINT    txDelay : 2;                    // ¶ÓÁÐ·¢ËÍÑÓÊ±, ·¢ËÍÓÐÐ§. 0:ÎÞ·¢ËÍÑÓÊ±, 1:·¢ËÍÑÓÊ±µ¥Î»ms, 2:·¢ËÍÑÓÊ±µ¥Î»100us. ÆôÓÃ¶ÓÁÐ·¢ËÍÑÓÊ±£¬ÑÓÊ±Ê±¼ä´æ·ÅÔÚtimeStamp×Ö¶Î
-            UINT    transmitType : 4;               // ·¢ËÍÀàÐÍ, ·¢ËÍÓÐÐ§. 0:Õý³£·¢ËÍ, 1:µ¥´Î·¢ËÍ, 2:×Ô·¢×ÔÊÕ, 3:µ¥´Î×Ô·¢×ÔÊÕ. ËùÓÐÉè±¸Ö§³ÖÕý³£·¢ËÍ£¬ÆäËûÀàÐÍÇë²Î¿¼¾ßÌåÊ¹ÓÃÊÖ²á
-            UINT    txEchoRequest : 1;              // ·¢ËÍ»ØÏÔÇëÇó, ·¢ËÍÓÐÐ§. Ö§³Ö·¢ËÍ»ØÏÔµÄÉè±¸,·¢ËÍÊý¾ÝÊ±½«´ËÎ»ÖÃ1,Éè±¸¿ÉÒÔÍ¨¹ý½ÓÊÕ½Ó¿Ú½«·¢ËÍ³öÈ¥µÄÊý¾ÝÖ¡·µ»Ø,½ÓÊÕµ½µÄ·¢ËÍÊý¾ÝÊ¹ÓÃtxEchoedÎ»±ê¼Ç
-            UINT    txEchoed : 1;                   // ±¨ÎÄÊÇ·ñÊÇ»ØÏÔ±¨ÎÄ, ½ÓÊÕÓÐÐ§. 0:Õý³£×ÜÏß½ÓÊÕ±¨ÎÄ, 1:±¾Éè±¸·¢ËÍ»ØÏÔ±¨ÎÄ.
-            UINT    reserved : 22;                  // ±£Áô
+            UINT    frameType : 2;                  // Ö¡ï¿½ï¿½ï¿½ï¿½, 0:CANÖ¡, 1:CANFDÖ¡
+            UINT    txDelay : 2;                    // ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ï¿½ï¿½ï¿½Ê±, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§. 0:ï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½Ê±, 1:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Î»ms, 2:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Î»100us. ï¿½ï¿½ï¿½Ã¶ï¿½ï¿½Ð·ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ê±Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½timeStampï¿½Ö¶ï¿½
+            UINT    transmitType : 4;               // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§. 0:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, 1:ï¿½ï¿½ï¿½Î·ï¿½ï¿½ï¿½, 2:ï¿½Ô·ï¿½ï¿½ï¿½ï¿½ï¿½, 3:ï¿½ï¿½ï¿½ï¿½ï¿½Ô·ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½è±¸Ö§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½Ö²ï¿½
+            UINT    txEchoRequest : 1;              // ï¿½ï¿½ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§. Ö§ï¿½Ö·ï¿½ï¿½Í»ï¿½ï¿½Ôµï¿½ï¿½è±¸,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½1,ï¿½è±¸ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Õ½Ó¿Ú½ï¿½ï¿½ï¿½ï¿½Í³ï¿½È¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Õµï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½txEchoedÎ»ï¿½ï¿½ï¿½
+            UINT    txEchoed : 1;                   // ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ç»ï¿½ï¿½Ô±ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§. 0:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½ï¿½Õ±ï¿½ï¿½ï¿½, 1:ï¿½ï¿½ï¿½è±¸ï¿½ï¿½ï¿½Í»ï¿½ï¿½Ô±ï¿½ï¿½ï¿½.
+            UINT    reserved : 22;                  // ï¿½ï¿½ï¿½ï¿½
         }unionVal;
-        UINT    rawVal;                             // Ö¡±êÖ¾Î»rawÊý¾Ý
-    }flag;                                          // CAN/CANFDÖ¡±êÖ¾Î»
-    BYTE        extraData[4];                       // ¶îÍâÊý¾Ý,ÔÝÎ´Ê¹ÓÃ
-    canfd_frame frame;                              // can/canfdÖ¡ID+Êý¾Ý
+        UINT    rawVal;                             // Ö¡ï¿½ï¿½Ö¾Î»rawï¿½ï¿½ï¿½ï¿½
+    }flag;                                          // CAN/CANFDÖ¡ï¿½ï¿½Ö¾Î»
+    BYTE        extraData[4];                       // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Î´Ê¹ï¿½ï¿½
+    canfd_frame frame;                              // can/canfdÖ¡ID+ï¿½ï¿½ï¿½ï¿½
 }ZCANCANFDData;
 
-// ´íÎóÊý¾Ý
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 typedef struct tagZCANErrorData
 {
-    UINT64  timeStamp;                              // Ê±¼ä´Á, µ¥Î»Î¢Ãë(us)
-    BYTE    errType;                                // ´íÎóÀàÐÍ, ²Î¿¼eZCANErrorDEFÖÐ ×ÜÏß´íÎóÀàÐÍ ²¿·ÖÖµ¶¨Òå
-    BYTE    errSubType;                             // ´íÎó×ÓÀàÐÍ, ²Î¿¼eZCANErrorDEFÖÐ ×ÜÏß´íÎó×ÓÀàÐÍ ²¿·ÖÖµ¶¨Òå
-    BYTE    nodeState;                              // ½Úµã×´Ì¬, ²Î¿¼eZCANErrorDEFÖÐ ½Úµã×´Ì¬ ²¿·ÖÖµ¶¨Òå
-    BYTE    rxErrCount;                             // ½ÓÊÕ´íÎó¼ÆÊý
-    BYTE    txErrCount;                             // ·¢ËÍ´íÎó¼ÆÊý
-    BYTE    errData;                                // ´íÎóÊý¾Ý, ºÍµ±Ç°´íÎóÀàÐÍÒÔ¼°´íÎó×ÓÀàÐÍ¶¨ÒåµÄ¾ßÌå´íÎóÏà¹Ø, ¾ßÌåÇë²Î¿¼Ê¹ÓÃÊÖ²á
-    BYTE    reserved[2];                            // ±£Áô
+    UINT64  timeStamp;                              // Ê±ï¿½ï¿½ï¿½, ï¿½ï¿½Î»Î¢ï¿½ï¿½(us)
+    BYTE    errType;                                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½Î¿ï¿½eZCANErrorDEFï¿½ï¿½ ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½
+    BYTE    errSubType;                             // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½Î¿ï¿½eZCANErrorDEFï¿½ï¿½ ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½
+    BYTE    nodeState;                              // ï¿½Úµï¿½×´Ì¬, ï¿½Î¿ï¿½eZCANErrorDEFï¿½ï¿½ ï¿½Úµï¿½×´Ì¬ ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½
+    BYTE    rxErrCount;                             // ï¿½ï¿½ï¿½Õ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    BYTE    txErrCount;                             // ï¿½ï¿½ï¿½Í´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    BYTE    errData;                                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½Íµï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¶ï¿½ï¿½ï¿½Ä¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½Ê¹ï¿½ï¿½ï¿½Ö²ï¿½
+    BYTE    reserved[2];                            // ï¿½ï¿½ï¿½ï¿½
 }ZCANErrorData;
 
-// GPSÊý¾Ý
+// GPSï¿½ï¿½ï¿½ï¿½
 typedef struct tagZCANGPSData
 {
     struct {
-        USHORT  year;                               // Äê
-        USHORT  mon;                                // ÔÂ
-        USHORT  day;                                // ÈÕ
+        USHORT  year;                               // ï¿½ï¿½
+        USHORT  mon;                                // ï¿½ï¿½
+        USHORT  day;                                // ï¿½ï¿½
         USHORT  hour;                               // Ê±
-        USHORT  min;                                // ·Ö
-        USHORT  sec;                                // Ãë
-        USHORT  milsec;                             // ºÁÃë
-    }           time;                               // UTCÊ±¼ä
+        USHORT  min;                                // ï¿½ï¿½
+        USHORT  sec;                                // ï¿½ï¿½
+        USHORT  milsec;                             // ï¿½ï¿½ï¿½ï¿½
+    }           time;                               // UTCÊ±ï¿½ï¿½
     union{
         struct{
-            USHORT timeValid : 1;                   // Ê±¼äÊý¾ÝÊÇ·ñÓÐÐ§
-            USHORT latlongValid : 1;                // ¾­Î³¶ÈÊý¾ÝÊÇ·ñÓÐÐ§
-            USHORT altitudeValid : 1;               // º£°ÎÊý¾ÝÊÇ·ñÓÐÐ§
-            USHORT speedValid : 1;                  // ËÙ¶ÈÊý¾ÝÊÇ·ñÓÐÐ§
-            USHORT courseAngleValid : 1;            // º½Ïò½ÇÊý¾ÝÊÇ·ñÓÐÐ§
-            USHORT reserved:13;                     // ±£Áô
+            USHORT timeValid : 1;                   // Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ð§
+            USHORT latlongValid : 1;                // ï¿½ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ð§
+            USHORT altitudeValid : 1;               // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ð§
+            USHORT speedValid : 1;                  // ï¿½Ù¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ð§
+            USHORT courseAngleValid : 1;            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ð§
+            USHORT reserved:13;                     // ï¿½ï¿½ï¿½ï¿½
         }unionVal;
         USHORT rawVal;
-    }flag;                                          // ±êÖ¾ÐÅÏ¢
-    double latitude;                                // Î³¶È ÕýÊý±íÊ¾±±Î³, ¸ºÊý±íÊ¾ÄÏÎ³
-    double longitude;                               // ¾­¶È ÕýÊý±íÊ¾¶«¾­, ¸ºÊý±íÊ¾Î÷¾­
-    double altitude;                                // º£°Î µ¥Î»: Ã×
-    double speed;                                   // ËÙ¶È µ¥Î»: km/h
-    double courseAngle;                             // º½Ïò½Ç
+    }flag;                                          // ï¿½ï¿½Ö¾ï¿½ï¿½Ï¢
+    double latitude;                                // Î³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½Î³, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½Î³
+    double longitude;                               // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
+    double altitude;                                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î»: ï¿½ï¿½
+    double speed;                                   // ï¿½Ù¶ï¿½ ï¿½ï¿½Î»: km/h
+    double courseAngle;                             // ï¿½ï¿½ï¿½ï¿½ï¿½
 } ZCANGPSData;
 
 
-// LINÊý¾Ý
+// LINï¿½ï¿½ï¿½ï¿½
 typedef struct tagZCANLINData
 {
     union {
         struct {
             BYTE    ID:6;                           // Ö¡ID
-            BYTE    Parity:2;                       // Ö¡IDÐ£Ñé
+            BYTE    Parity:2;                       // Ö¡IDÐ£ï¿½ï¿½
         }unionVal;
-        BYTE    rawVal;                             // ÊÜ±£»¤µÄIDÔ­Ê¼Öµ
-    }       PID;                                    // ÊÜ±£»¤µÄID
+        BYTE    rawVal;                             // ï¿½Ü±ï¿½ï¿½ï¿½ï¿½ï¿½IDÔ­Ê¼Öµ
+    }       PID;                                    // ï¿½Ü±ï¿½ï¿½ï¿½ï¿½ï¿½ID
     struct
     {
-        UINT64  timeStamp;                          // Ê±¼ä´Á£¬µ¥Î»Î¢Ãë(us)
-        BYTE    dataLen;                            // Êý¾Ý³¤¶È
-        BYTE    dir;                                // ´«Êä·½Ïò£¬0-½ÓÊÕ 1-·¢ËÍ
-        BYTE    chkSum;                             // Êý¾ÝÐ£Ñé, ²¿·ÖÉè±¸²»Ö§³ÖÐ£ÑéÊý¾ÝµÄ»ñÈ¡
-        BYTE    reserved[13];                       // ±£Áô
-        BYTE    data[8];                            // Êý¾Ý
-    }RxData;                                        // ½ö½ÓÊÕÊý¾ÝÊ±ÓÐÐ§
-	BYTE reserved[7];                               // ±£Áô
+        UINT64  timeStamp;                          // Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»Î¢ï¿½ï¿½(us)
+        BYTE    dataLen;                            // ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½
+        BYTE    dir;                                // ï¿½ï¿½ï¿½ä·½ï¿½ï¿½0-ï¿½ï¿½ï¿½ï¿½ 1-ï¿½ï¿½ï¿½ï¿½
+        BYTE    chkSum;                             // ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½è±¸ï¿½ï¿½Ö§ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½ÝµÄ»ï¿½È¡
+        BYTE    reserved[13];                       // ï¿½ï¿½ï¿½ï¿½
+        BYTE    data[8];                            // ï¿½ï¿½ï¿½ï¿½
+    }RxData;                                        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ð§
+	BYTE reserved[7];                               // ï¿½ï¿½ï¿½ï¿½
 }ZCANLINData;
 
-// ´íÎóÊý¾Ý
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 typedef struct tagZCANLINErrData
 {
-	UINT64  timeStamp;                              // Ê±¼ä´Á, µ¥Î»Î¢Ãë(us)
+	UINT64  timeStamp;                              // Ê±ï¿½ï¿½ï¿½, ï¿½ï¿½Î»Î¢ï¿½ï¿½(us)
 	union {
 		struct {
 			BYTE    ID : 6;                           // Ö¡ID
-			BYTE    Parity : 2;                       // Ö¡IDÐ£Ñé
+			BYTE    Parity : 2;                       // Ö¡IDÐ£ï¿½ï¿½
 		}unionVal;
-		BYTE    rawVal;                             // ÊÜ±£»¤µÄIDÔ­Ê¼Öµ
-	}       PID;                                    // ÊÜ±£»¤µÄID
+		BYTE    rawVal;                             // ï¿½Ü±ï¿½ï¿½ï¿½ï¿½ï¿½IDÔ­Ê¼Öµ
+	}       PID;                                    // ï¿½Ü±ï¿½ï¿½ï¿½ï¿½ï¿½ID
 	BYTE    dataLen;
 	BYTE    data[8];
 	union
 	{
 		struct
 		{
-			USHORT errStage : 4;                     // ´íÎó½×¶Î
-			USHORT errReason : 4;                    // ´íÎóÔ­Òò
-			USHORT reserved : 8;                    // ±£Áô
+			USHORT errStage : 4;                     // ï¿½ï¿½ï¿½ï¿½×¶ï¿½
+			USHORT errReason : 4;                    // ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½
+			USHORT reserved : 8;                    // ï¿½ï¿½ï¿½ï¿½
 		};
 		USHORT unionErrData;
 	}errData;
-	BYTE    dir;                                    // ´«Êä·½Ïò 
-	BYTE    chkSum;                                 // Êý¾ÝÐ£Ñé, ²¿·ÖÉè±¸²»Ö§³ÖÐ£ÑéÊý¾ÝµÄ»ñÈ¡
-	BYTE    reserved[10];                           // ±£Áô
+	BYTE    dir;                                    // ï¿½ï¿½ï¿½ä·½ï¿½ï¿½ 
+	BYTE    chkSum;                                 // ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½è±¸ï¿½ï¿½Ö§ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½ÝµÄ»ï¿½È¡
+	BYTE    reserved[10];                           // ï¿½ï¿½ï¿½ï¿½
 }ZCANLINErrData;
 
-// ºÏ²¢½ÓÊÕÊý¾ÝÊý¾Ý½á¹¹£¬Ö§³ÖCAN/CANFD/LIN/GPS/´íÎóµÈ²»Í¬ÀàÐÍÊý¾Ý
+// ï¿½Ï²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý½á¹¹ï¿½ï¿½Ö§ï¿½ï¿½CAN/CANFD/LIN/GPS/ï¿½ï¿½ï¿½ï¿½È²ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 typedef struct tagZCANDataObj
 {
-    BYTE        dataType;                           // Êý¾ÝÀàÐÍ, ²Î¿¼eZCANDataDEFÖÐ Êý¾ÝÀàÐÍ ²¿·Ö¶¨Òå
-    BYTE        chnl;                               // Êý¾ÝÍ¨µÀ
+    BYTE        dataType;                           // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½Î¿ï¿½eZCANDataDEFï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½
+    BYTE        chnl;                               // ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½
     union{
         struct{
-            USHORT reserved : 16;                   // ±£Áô
+            USHORT reserved : 16;                   // ï¿½ï¿½ï¿½ï¿½
         }unionVal;
         USHORT rawVal;
-    }flag;                                          // ±êÖ¾ÐÅÏ¢, ÔÝÎ´Ê¹ÓÃ
-    BYTE        extraData[4];                       // ¶îÍâÊý¾Ý, ÔÝÎ´Ê¹ÓÃ
+    }flag;                                          // ï¿½ï¿½Ö¾ï¿½ï¿½Ï¢, ï¿½ï¿½Î´Ê¹ï¿½ï¿½
+    BYTE        extraData[4];                       // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½Î´Ê¹ï¿½ï¿½
     union
     {
-        ZCANCANFDData           zcanCANFDData;      // CAN/CANFDÊý¾Ý
-        ZCANErrorData           zcanErrData;        // ´íÎóÊý¾Ý
-        ZCANGPSData             zcanGPSData;        // GPSÊý¾Ý
-        ZCANLINData             zcanLINData;        // LINÊý¾Ý
-        ZCANLINErrData          zcanLINErrData;     // LIN´íÎóÊý¾Ý
-        BusUsage                busUsage;           // BusUsageÊý¾Ý
-        BYTE                    raw[92];            // RAWÊý¾Ý
-    } data;                                         // Êµ¼ÊÊý¾Ý, ÁªºÏÌå£¬ÓÐÐ§³ÉÔ±¸ù¾Ý dataType ×Ö¶Î¶ø¶¨
+        ZCANCANFDData           zcanCANFDData;      // CAN/CANFDï¿½ï¿½ï¿½ï¿½
+        ZCANErrorData           zcanErrData;        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        ZCANGPSData             zcanGPSData;        // GPSï¿½ï¿½ï¿½ï¿½
+        ZCANLINData             zcanLINData;        // LINï¿½ï¿½ï¿½ï¿½
+        ZCANLINErrData          zcanLINErrData;     // LINï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        BusUsage                busUsage;           // BusUsageï¿½ï¿½ï¿½ï¿½
+        BYTE                    raw[92];            // RAWï¿½ï¿½ï¿½ï¿½
+    } data;                                         // Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½å£¬ï¿½ï¿½Ð§ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ dataType ï¿½Ö¶Î¶ï¿½ï¿½ï¿½
 }ZCANDataObj;
 
 //LIN
 typedef struct _VCI_LIN_MSG{
-	BYTE        chnl;                               // Êý¾ÝÍ¨µÀ
-	BYTE        dataType;                           // Êý¾ÝÀàÐÍ, 0-LINÊý¾Ý 1-LIN´íÎóÊý¾Ý
+	BYTE        chnl;                               // ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½
+	BYTE        dataType;                           // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, 0-LINï¿½ï¿½ï¿½ï¿½ 1-LINï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	union
 	{
-		ZCANLINData             zcanLINData;        // LINÊý¾Ý
-		ZCANLINErrData          zcanLINErrData;     // LIN´íÎóÊý¾Ý
-		BYTE                    raw[46];            // RAWÊý¾Ý
-	} data;                                         // Êµ¼ÊÊý¾Ý, ÁªºÏÌå£¬ÓÐÐ§³ÉÔ±¸ù¾Ý dataType ×Ö¶Î¶ø¶¨
+		ZCANLINData             zcanLINData;        // LINï¿½ï¿½ï¿½ï¿½
+		ZCANLINErrData          zcanLINErrData;     // LINï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		BYTE                    raw[46];            // RAWï¿½ï¿½ï¿½ï¿½
+	} data;                                         // Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½å£¬ï¿½ï¿½Ð§ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ dataType ï¿½Ö¶Î¶ï¿½ï¿½ï¿½
 }ZCAN_LIN_MSG, *PZCAN_LIN_MSG;
 
 enum eZLINChkSumMode
 {
-	DEFAULT = 0,                           // Ä¬ÈÏ£¬Æô¶¯Ê±ÅäÖÃ
-	CLASSIC_CHKSUM,                        // ¾­µäÐ£Ñé
-	ENHANCE_CHKSUM,                        // ÔöÇ¿Ð£Ñé 
-	AUTOMATIC,                             // ×Ô¶¯£¬Éè±¸×Ô¶¯Ê¶±ðÐ£Ñé·½Ê½£¨½öZCAN_SetLINSubscribeÊ±ÓÐÐ§£©
+	DEFAULT = 0,                           // Ä¬ï¿½Ï£ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
+	CLASSIC_CHKSUM,                        // ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½
+	ENHANCE_CHKSUM,                        // ï¿½ï¿½Ç¿Ð£ï¿½ï¿½ 
+	AUTOMATIC,                             // ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½è±¸ï¿½Ô¶ï¿½Ê¶ï¿½ï¿½Ð£ï¿½é·½Ê½ï¿½ï¿½ï¿½ï¿½ZCAN_SetLINSubscribeÊ±ï¿½ï¿½Ð§ï¿½ï¿½
 };
 typedef struct _VCI_LIN_INIT_CONFIG
 {
-	BYTE    linMode;                       // ÊÇ·ñ×÷ÎªÖ÷»ú£¬0-´Ó»ú£¬1-Ö÷»ú
-	BYTE    chkSumMode;                    // Ð£Ñé·½Ê½£¬1-¾­µäÐ£Ñé 2-ÔöÇ¿Ð£Ñé 3-×Ô¶¯(¶ÔÓ¦eZLINChkSumModeµÄÄ£Ê½)
-	USHORT  reserved;					   // ±£Áô
-	UINT    linBaud;                       // ²¨ÌØÂÊ£¬È¡Öµ1000~20000
+	BYTE    linMode;                       // ï¿½Ç·ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0-ï¿½Ó»ï¿½ï¿½ï¿½1-ï¿½ï¿½ï¿½ï¿½
+	BYTE    chkSumMode;                    // Ð£ï¿½é·½Ê½ï¿½ï¿½1-ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ 2-ï¿½ï¿½Ç¿Ð£ï¿½ï¿½ 3-ï¿½Ô¶ï¿½(ï¿½ï¿½Ó¦eZLINChkSumModeï¿½ï¿½Ä£Ê½)
+	USHORT  reserved;					   // ï¿½ï¿½ï¿½ï¿½
+	UINT    linBaud;                       // ï¿½ï¿½ï¿½ï¿½ï¿½Ê£ï¿½È¡Öµ1000~20000
 }ZCAN_LIN_INIT_CONFIG, *PZCAN_LIN_INIT_CONFIG;
 
 typedef struct _VCI_LIN_PUBLISH_CFG
 {
-	BYTE    ID;                                     // ÊÜ±£»¤µÄID£¨IDÈ¡Öµ·¶Î§Îª0-63£©
-	BYTE    dataLen;                                // dataLen·¶Î§Îª1-8
+	BYTE    ID;                                     // ï¿½Ü±ï¿½ï¿½ï¿½ï¿½ï¿½IDï¿½ï¿½IDÈ¡Öµï¿½ï¿½Î§Îª0-63ï¿½ï¿½
+	BYTE    dataLen;                                // dataLenï¿½ï¿½Î§Îª1-8
 	BYTE    data[8];
-	BYTE    chkSumMode;                             // Ð£Ñé·½Ê½£¬0-Ä¬ÈÏ£¬Æô¶¯Ê±ÅäÖÃ 1-¾­µäÐ£Ñé 2-ÔöÇ¿Ð£Ñé(¶ÔÓ¦eZLINChkSumModeµÄÄ£Ê½)
-	BYTE    reserved[5];                            // ±£Áô
+	BYTE    chkSumMode;                             // Ð£ï¿½é·½Ê½ï¿½ï¿½0-Ä¬ï¿½Ï£ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ 1-ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ 2-ï¿½ï¿½Ç¿Ð£ï¿½ï¿½(ï¿½ï¿½Ó¦eZLINChkSumModeï¿½ï¿½Ä£Ê½)
+	BYTE    reserved[5];                            // ï¿½ï¿½ï¿½ï¿½
 }ZCAN_LIN_PUBLISH_CFG, *PZCAN_LIN_PUBLISH_CFG;
 
 typedef struct _VCI_LIN_SUBSCIBE_CFG
 {
-	BYTE    ID;                                     // ÊÜ±£»¤µÄID£¨IDÈ¡Öµ·¶Î§Îª0-63£©
-	BYTE    dataLen;                                // dataLen·¶Î§Îª1-8 µ±Îª255£¨0xff£©Ôò±íÊ¾Éè±¸×Ô¶¯Ê¶±ð±¨ÎÄ³¤¶È
-	BYTE    chkSumMode;                             // Ð£Ñé·½Ê½£¬0-Ä¬ÈÏ£¬Æô¶¯Ê±ÅäÖÃ 1-¾­µäÐ£Ñé 2-ÔöÇ¿Ð£Ñé 3-×Ô¶¯(¶ÔÓ¦eZLINChkSumModeµÄÄ£Ê½)
-	BYTE    reserved[5];                            // ±£Áô
+	BYTE    ID;                                     // ï¿½Ü±ï¿½ï¿½ï¿½ï¿½ï¿½IDï¿½ï¿½IDÈ¡Öµï¿½ï¿½Î§Îª0-63ï¿½ï¿½
+	BYTE    dataLen;                                // dataLenï¿½ï¿½Î§Îª1-8 ï¿½ï¿½Îª255ï¿½ï¿½0xffï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½è±¸ï¿½Ô¶ï¿½Ê¶ï¿½ï¿½ï¿½Ä³ï¿½ï¿½ï¿½
+	BYTE    chkSumMode;                             // Ð£ï¿½é·½Ê½ï¿½ï¿½0-Ä¬ï¿½Ï£ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ 1-ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ 2-ï¿½ï¿½Ç¿Ð£ï¿½ï¿½ 3-ï¿½Ô¶ï¿½(ï¿½ï¿½Ó¦eZLINChkSumModeï¿½ï¿½Ä£Ê½)
+	BYTE    reserved[5];                            // ï¿½ï¿½ï¿½ï¿½
 }ZCAN_LIN_SUBSCIBE_CFG, *PZCAN_LIN_SUBSCIBE_CFG;
 
 //end LIN
 
 
-// UDS´«ÊäÐ­Òé°æ±¾
+// UDSï¿½ï¿½ï¿½ï¿½Ð­ï¿½ï¿½æ±¾
 typedef BYTE ZCAN_UDS_TRANS_VER;
-#define ZCAN_UDS_TRANS_VER_0        0       // ISO15765-2(2004°æ±¾)
-#define ZCAN_UDS_TRANS_VER_1        1       // ISO15765-2(2016°æ±¾)
+#define ZCAN_UDS_TRANS_VER_0        0       // ISO15765-2(2004ï¿½æ±¾)
+#define ZCAN_UDS_TRANS_VER_1        1       // ISO15765-2(2016ï¿½æ±¾)
 
-// Ö¡ÀàÐÍ
+// Ö¡ï¿½ï¿½ï¿½ï¿½
 typedef BYTE ZCAN_UDS_FRAME_TYPE;
 #define ZCAN_UDS_FRAME_CAN          0       // CANÖ¡
 #define ZCAN_UDS_FRAME_CANFD        1       // CANFDÖ¡
-#define ZCAN_UDS_FRAME_CANFD_BRS    2       // CANFD¼ÓËÙÖ¡
+#define ZCAN_UDS_FRAME_CANFD_BRS    2       // CANFDï¿½ï¿½ï¿½ï¿½Ö¡
 
-// CAN UDSÇëÇóÊý¾Ý
+// CAN UDSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 typedef struct _ZCAN_UDS_REQUEST
 {
-    UINT req_id;                            // ÇëÇóÊÂÎñID£¬·¶Î§0~65535£¬±¾´ÎÇëÇóµÄÎ¨Ò»±êÊ¶
-    BYTE channel;                           // Éè±¸Í¨µÀË÷Òý 0~255
-    ZCAN_UDS_FRAME_TYPE frame_type;         // Ö¡ÀàÐÍ
-    BYTE reserved0[2];                      // ±£Áô
-    UINT src_addr;                          // ÇëÇóµØÖ·
-    UINT dst_addr;                          // ÏìÓ¦µØÖ·
-    BYTE suppress_response;                 // 1:ÒÖÖÆÏìÓ¦
-    BYTE sid;                               // ÇëÇó·þÎñid
-    BYTE reserved1[6];                      // ±£Áô
+    UINT req_id;                            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½IDï¿½ï¿½ï¿½ï¿½Î§0~65535ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¨Ò»ï¿½ï¿½Ê¶
+    BYTE channel;                           // ï¿½è±¸Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 0~255
+    ZCAN_UDS_FRAME_TYPE frame_type;         // Ö¡ï¿½ï¿½ï¿½ï¿½
+    BYTE reserved0[2];                      // ï¿½ï¿½ï¿½ï¿½
+    UINT src_addr;                          // ï¿½ï¿½ï¿½ï¿½ï¿½Ö·
+    UINT dst_addr;                          // ï¿½ï¿½Ó¦ï¿½ï¿½Ö·
+    BYTE suppress_response;                 // 1:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦
+    BYTE sid;                               // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½id
+    BYTE reserved1[6];                      // ï¿½ï¿½ï¿½ï¿½
     struct {
-        UINT timeout;                       // ÏìÓ¦³¬Ê±Ê±¼ä(ms)¡£ÒòPC¶¨Ê±Æ÷Îó²î£¬½¨ÒéÉèÖÃ²»Ð¡ÓÚ200ms
-        UINT enhanced_timeout;              // ÊÕµ½Ïû¼«ÏìÓ¦´íÎóÂëÎª0x78ºóµÄ³¬Ê±Ê±¼ä(ms)¡£ÒòPC¶¨Ê±Æ÷Îó²î£¬½¨ÒéÉèÖÃ²»Ð¡ÓÚ200ms
-        BYTE check_any_negative_response:1; // ½ÓÊÕµ½·Ç±¾´ÎÇëÇó·þÎñµÄÏû¼«ÏìÓ¦Ê±ÊÇ·ñÐèÒªÅÐ¶¨ÎªÏìÓ¦´íÎó
-        BYTE wait_if_suppress_response:1;   // ÒÖÖÆÏìÓ¦Ê±ÊÇ·ñÐèÒªµÈ´ýÏû¼«ÏìÓ¦£¬µÈ´ýÊ±³¤ÎªÏìÓ¦³¬Ê±Ê±¼ä
-        BYTE flag:6;                        // ±£Áô
-        BYTE reserved0[7];                  // ±£Áô
-    } session_param;                        // »á»°²ã²ÎÊý
+        UINT timeout;                       // ï¿½ï¿½Ó¦ï¿½ï¿½Ê±Ê±ï¿½ï¿½(ms)ï¿½ï¿½ï¿½ï¿½PCï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½î£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½Ð¡ï¿½ï¿½200ms
+        UINT enhanced_timeout;              // ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0x78ï¿½ï¿½Ä³ï¿½Ê±Ê±ï¿½ï¿½(ms)ï¿½ï¿½ï¿½ï¿½PCï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½î£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½Ð¡ï¿½ï¿½200ms
+        BYTE check_any_negative_response:1; // ï¿½ï¿½ï¿½Õµï¿½ï¿½Ç±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Ê±ï¿½Ç·ï¿½ï¿½ï¿½Òªï¿½Ð¶ï¿½Îªï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½
+        BYTE wait_if_suppress_response:1;   // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Ê±ï¿½Ç·ï¿½ï¿½ï¿½Òªï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½È´ï¿½Ê±ï¿½ï¿½Îªï¿½ï¿½Ó¦ï¿½ï¿½Ê±Ê±ï¿½ï¿½
+        BYTE flag:6;                        // ï¿½ï¿½ï¿½ï¿½
+        BYTE reserved0[7];                  // ï¿½ï¿½ï¿½ï¿½
+    } session_param;                        // ï¿½á»°ï¿½ï¿½ï¿½ï¿½ï¿½
     struct {
-        ZCAN_UDS_TRANS_VER version;         // ´«ÊäÐ­Òé°æ±¾, VERSION_0, VERSION_1
-        BYTE max_data_len;                  // µ¥Ö¡×î´óÊý¾Ý³¤¶È, can:8, canfd:64
-        BYTE local_st_min;                  // ±¾³ÌÐò·¢ËÍÁ÷¿ØÊ±ÓÃ£¬Á¬ÐøÖ¡Ö®¼äµÄ×îÐ¡¼ä¸ô, 0x00-0x7F(0ms~127ms), 0xF1-0xF9(100us~900us)
-        BYTE block_size;                    // Á÷¿ØÖ¡µÄ¿é´óÐ¡
-        BYTE fill_byte;                     // ÎÞÐ§×Ö½ÚµÄÌî³äÊý¾Ý
-        BYTE ext_frame;                     // 0:±ê×¼Ö¡ 1:À©Õ¹Ö¡
-        BYTE is_modify_ecu_st_min;          // ÊÇ·ñºöÂÔECU·µ»ØÁ÷¿ØµÄSTmin£¬Ç¿ÖÆÊ¹ÓÃ±¾³ÌÐòÉèÖÃµÄ remote_st_min
-        BYTE remote_st_min;                 // ·¢ËÍ¶àÖ¡Ê±ÓÃ, is_ignore_ecu_st_min = 1 Ê±ÓÐÐ§, 0x00-0x7F(0ms~127ms), 0xF1-0xF9(100us~900us)
-        UINT fc_timeout;                    // ½ÓÊÕÁ÷¿Ø³¬Ê±Ê±¼ä(ms), Èç·¢ËÍÊ×Ö¡ºóÐèÒªµÈ´ý»ØÓ¦Á÷¿ØÖ¡
-        BYTE reserved0[4];                  // ±£Áô
-    } trans_param;                          // ´«Êä²ã²ÎÊý
-    BYTE *data;                             // Êý¾ÝÊý×é(²»°üº¬SID)
-    UINT data_len;                          // Êý¾ÝÊý×éµÄ³¤¶È
-    UINT reserved2;                         // ±£Áô
+        ZCAN_UDS_TRANS_VER version;         // ï¿½ï¿½ï¿½ï¿½Ð­ï¿½ï¿½æ±¾, VERSION_0, VERSION_1
+        BYTE max_data_len;                  // ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½, can:8, canfd:64
+        BYTE local_st_min;                  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡Ö®ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½, 0x00-0x7F(0ms~127ms), 0xF1-0xF9(100us~900us)
+        BYTE block_size;                    // ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½Ä¿ï¿½ï¿½Ð¡
+        BYTE fill_byte;                     // ï¿½ï¿½Ð§ï¿½Ö½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        BYTE ext_frame;                     // 0:ï¿½ï¿½×¼Ö¡ 1:ï¿½ï¿½Õ¹Ö¡
+        BYTE is_modify_ecu_st_min;          // ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ECUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½STminï¿½ï¿½Ç¿ï¿½ï¿½Ê¹ï¿½Ã±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½ remote_st_min
+        BYTE remote_st_min;                 // ï¿½ï¿½ï¿½Í¶ï¿½Ö¡Ê±ï¿½ï¿½, is_ignore_ecu_st_min = 1 Ê±ï¿½ï¿½Ð§, 0x00-0x7F(0ms~127ms), 0xF1-0xF9(100us~900us)
+        UINT fc_timeout;                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø³ï¿½Ê±Ê±ï¿½ï¿½(ms), ï¿½ç·¢ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½Òªï¿½È´ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½Ö¡
+        BYTE reserved0[4];                  // ï¿½ï¿½ï¿½ï¿½
+    } trans_param;                          // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    BYTE *data;                             // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SID)
+    UINT data_len;                          // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³ï¿½ï¿½ï¿½
+    UINT reserved2;                         // ï¿½ï¿½ï¿½ï¿½
 } ZCAN_UDS_REQUEST;
 
-// LIN UDSÇëÇóÊý¾Ý
+// LIN UDSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 typedef struct _ZLIN_UDS_REQUEST
 {
-	UINT req_id;                            // ÇëÇóÊÂÎñID£¬·¶Î§0~65535£¬±¾´ÎÇëÇóµÄÎ¨Ò»±êÊ¶
-	BYTE channel;                           // Éè±¸Í¨µÀË÷Òý 0~255
-	BYTE suppress_response;                 // 1:ÒÖÖÆÏìÓ¦ 0£º²»ÒÖÖÆ
-	BYTE sid;                               // ÇëÇó·þÎñid
-	BYTE Nad;                               // ½ÚµãµØÖ·
-	BYTE reserved1[8];                      // ±£Áô
+	UINT req_id;                            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½IDï¿½ï¿½ï¿½ï¿½Î§0~65535ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¨Ò»ï¿½ï¿½Ê¶
+	BYTE channel;                           // ï¿½è±¸Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 0~255
+	BYTE suppress_response;                 // 1:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ 0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	BYTE sid;                               // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½id
+	BYTE Nad;                               // ï¿½Úµï¿½ï¿½Ö·
+	BYTE reserved1[8];                      // ï¿½ï¿½ï¿½ï¿½
 	struct {
-		UINT p2_timeout;                    // ÏìÓ¦³¬Ê±Ê±¼ä(ms)¡£ÒòPC¶¨Ê±Æ÷Îó²î£¬½¨ÒéÉèÖÃ²»Ð¡ÓÚ200ms
-		UINT enhanced_timeout;              // ÊÕµ½Ïû¼«ÏìÓ¦´íÎóÂëÎª0x78ºóµÄ³¬Ê±Ê±¼ä(ms)¡£ÒòPC¶¨Ê±Æ÷Îó²î£¬½¨ÒéÉèÖÃ²»Ð¡ÓÚ200ms
-		BYTE check_any_negative_response : 1; // ½ÓÊÕµ½·Ç±¾´ÎÇëÇó·þÎñµÄÏû¼«ÏìÓ¦Ê±ÊÇ·ñÐèÒªÅÐ¶¨ÎªÏìÓ¦´íÎó
-		BYTE wait_if_suppress_response : 1;   // ÒÖÖÆÏìÓ¦Ê±ÊÇ·ñÐèÒªµÈ´ýÏû¼«ÏìÓ¦£¬µÈ´ýÊ±³¤ÎªÏìÓ¦³¬Ê±Ê±¼ä
-		BYTE flag : 6;                        // ±£Áô
-		BYTE reserved0[7];                  // ±£Áô
-	} session_param;                        // »á»°²ã²ÎÊý
+		UINT p2_timeout;                    // ï¿½ï¿½Ó¦ï¿½ï¿½Ê±Ê±ï¿½ï¿½(ms)ï¿½ï¿½ï¿½ï¿½PCï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½î£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½Ð¡ï¿½ï¿½200ms
+		UINT enhanced_timeout;              // ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0x78ï¿½ï¿½Ä³ï¿½Ê±Ê±ï¿½ï¿½(ms)ï¿½ï¿½ï¿½ï¿½PCï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½î£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½Ð¡ï¿½ï¿½200ms
+		BYTE check_any_negative_response : 1; // ï¿½ï¿½ï¿½Õµï¿½ï¿½Ç±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Ê±ï¿½Ç·ï¿½ï¿½ï¿½Òªï¿½Ð¶ï¿½Îªï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½
+		BYTE wait_if_suppress_response : 1;   // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Ê±ï¿½Ç·ï¿½ï¿½ï¿½Òªï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½È´ï¿½Ê±ï¿½ï¿½Îªï¿½ï¿½Ó¦ï¿½ï¿½Ê±Ê±ï¿½ï¿½
+		BYTE flag : 6;                        // ï¿½ï¿½ï¿½ï¿½
+		BYTE reserved0[7];                  // ï¿½ï¿½ï¿½ï¿½
+	} session_param;                        // ï¿½á»°ï¿½ï¿½ï¿½ï¿½ï¿½
 	struct {
-		BYTE fill_byte;                     // ÎÞÐ§×Ö½ÚµÄÌî³äÊý¾Ý
-		BYTE st_min;                        // ´Ó½Úµã×¼±¸½ÓÊÕÕï¶ÏÇëÇóµÄÏÂÒ»Ö¡»ò´«ÊäÕï¶ÏÏìÓ¦µÄÏÂÒ»Ö¡ËùÐèµÄ×îÐ¡Ê±¼ä
-		BYTE reserved0[6];                  // ±£Áô
-	} trans_param;                          // ´«Êä²ã²ÎÊý
-	BYTE *data;                             // Êý¾ÝÊý×é(²»°üº¬SID)
-	UINT data_len;                          // Êý¾ÝÊý×éµÄ³¤¶È
-	UINT reserved2;                         // ±£Áô
+		BYTE fill_byte;                     // ï¿½ï¿½Ð§ï¿½Ö½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		BYTE st_min;                        // ï¿½Ó½Úµï¿½×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½Ò»Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡Ê±ï¿½ï¿½
+		BYTE reserved0[6];                  // ï¿½ï¿½ï¿½ï¿½
+	} trans_param;                          // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	BYTE *data;                             // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SID)
+	UINT data_len;                          // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³ï¿½ï¿½ï¿½
+	UINT reserved2;                         // ï¿½ï¿½ï¿½ï¿½
 } ZLIN_UDS_REQUEST;
 
-// UDS´íÎóÂë
+// UDSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 typedef BYTE ZCAN_UDS_ERROR;
-#define ZCAN_UDS_ERROR_OK                   0    // Ã»´íÎó
-#define ZCAN_UDS_ERROR_TIMEOUT              1    // ÏìÓ¦³¬Ê±
-#define ZCAN_UDS_ERROR_TRANSPORT            2    // ·¢ËÍÊý¾ÝÊ§°Ü
-#define ZCAN_UDS_ERROR_CANCEL               3    // È¡ÏûÇëÇó
-#define ZCAN_UDS_ERROR_SUPPRESS_RESPONSE    4    // ÒÖÖÆÏìÓ¦
-#define ZCAN_UDS_ERROR_BUSY                 5    // Ã¦ÂµÖÐ
-#define ZCAN_UDS_ERROR_REQ_PARAM            6    // ÇëÇó²ÎÊý´íÎó
+#define ZCAN_UDS_ERROR_OK                   0    // Ã»ï¿½ï¿½ï¿½ï¿½
+#define ZCAN_UDS_ERROR_TIMEOUT              1    // ï¿½ï¿½Ó¦ï¿½ï¿½Ê±
+#define ZCAN_UDS_ERROR_TRANSPORT            2    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½
+#define ZCAN_UDS_ERROR_CANCEL               3    // È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+#define ZCAN_UDS_ERROR_SUPPRESS_RESPONSE    4    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦
+#define ZCAN_UDS_ERROR_BUSY                 5    // Ã¦Âµï¿½ï¿½
+#define ZCAN_UDS_ERROR_REQ_PARAM            6    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #define ZCAN_UDS_ERROR_OTHTER               100
 
 typedef BYTE ZCAN_UDS_RESPONSE_TYPE;
-#define ZCAN_UDS_RT_NEGATIVE 0              // Ïû¼«ÏìÓ¦
-#define ZCAN_UDS_RT_POSITIVE 1              // »ý¼«ÏìÓ¦
+#define ZCAN_UDS_RT_NEGATIVE 0              // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦
+#define ZCAN_UDS_RT_POSITIVE 1              // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦
 
-// UDSÏìÓ¦Êý¾Ý
+// UDSï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½
 typedef struct _ZCAN_UDS_RESPONSE
 {
-    ZCAN_UDS_ERROR status;                  // ÏìÓ¦×´Ì¬
-    BYTE reserved[6];                       // ±£Áô
-    ZCAN_UDS_RESPONSE_TYPE type;            // ÏìÓ¦ÀàÐÍ
+    ZCAN_UDS_ERROR status;                  // ï¿½ï¿½Ó¦×´Ì¬
+    BYTE reserved[6];                       // ï¿½ï¿½ï¿½ï¿½
+    ZCAN_UDS_RESPONSE_TYPE type;            // ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½
     union {
         struct {
-            BYTE sid;                       // ÏìÓ¦·þÎñid
-            UINT data_len;                  // Êý¾Ý³¤¶È(²»°üº¬SID), Êý¾Ý´æ·ÅÔÚ½Ó¿Ú´«ÈëµÄdataBufÖÐ
+            BYTE sid;                       // ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½id
+            UINT data_len;                  // ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SID), ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½Ú½Ó¿Ú´ï¿½ï¿½ï¿½ï¿½dataBufï¿½ï¿½
         } positive;
         struct {
-            BYTE  neg_code;                 // ¹Ì¶¨Îª0x7F
-            BYTE  sid;                      // ÇëÇó·þÎñid
-            BYTE  error_code;               // ´íÎóÂë
+            BYTE  neg_code;                 // ï¿½Ì¶ï¿½Îª0x7F
+            BYTE  sid;                      // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½id
+            BYTE  error_code;               // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         } negative;
         BYTE raw[8]; 
     };
 } ZCAN_UDS_RESPONSE;
 
-// UDS¿ØÖÆÀàÐÍ
+// UDSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 typedef UINT ZCAN_UDS_CTRL_CODE;
-#define ZCAN_UDS_CTRL_STOP_REQ 0            // Í£Ö¹UDSÇëÇó
+#define ZCAN_UDS_CTRL_STOP_REQ 0            // Í£Ö¹UDSï¿½ï¿½ï¿½ï¿½
 
-// UDS¿ØÖÆÇëÇó
+// UDSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 typedef struct _ZCAN_UDS_CTRL_REQ
 {
-    UINT reqID;                              // ÇëÇóÊÂÎñID£¬Ö¸Ã÷Òª²Ù×÷ÄÄÒ»ÌõÇëÇó
-	ZCAN_UDS_CTRL_CODE cmd;                  // ¿ØÖÆÀàÐÍ
-    BYTE reserved[8];                        // ±£Áô
+    UINT reqID;                              // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½IDï¿½ï¿½Ö¸ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	ZCAN_UDS_CTRL_CODE cmd;                  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    BYTE reserved[8];                        // ï¿½ï¿½ï¿½ï¿½
 } ZCAN_UDS_CTRL_REQ;
 
-// UDS¿ØÖÆ½á¹û
+// UDSï¿½ï¿½ï¿½Æ½ï¿½ï¿½
 typedef UINT ZCAN_UDS_CTRL_RESULT;
-#define ZCAN_UDS_CTRL_RESULT_OK  0          // ³É¹¦
-#define ZCAN_UDS_CTRL_RESULT_ERR 1          // Ê§°Ü
+#define ZCAN_UDS_CTRL_RESULT_OK  0          // ï¿½É¹ï¿½
+#define ZCAN_UDS_CTRL_RESULT_ERR 1          // Ê§ï¿½ï¿½
 
-// UDS¿ØÖÆÏìÓ¦Êý¾Ý
+// UDSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½
 typedef struct _ZCAN_UDS_CTRL_RESP
 {
-    ZCAN_UDS_CTRL_RESULT result;            // ²Ù×÷½á¹û
-    BYTE reserved[8];                       // ±£Áô
+    ZCAN_UDS_CTRL_RESULT result;            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    BYTE reserved[8];                       // ï¿½ï¿½ï¿½ï¿½
 } ZCAN_UDS_CTRL_RESP;
 
-// CAN/CANFD UDSÊý¾Ý
+// CAN/CANFD UDSï¿½ï¿½ï¿½ï¿½
 typedef struct tagZCANCANFDUdsData
 {
-	const ZCAN_UDS_REQUEST* req;			// ÇëÇóÐÅÏ¢
+	const ZCAN_UDS_REQUEST* req;			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	BYTE reserved[28];
 }ZCANCANFDUdsData;
 
-// LIN UDSÊý¾Ý
+// LIN UDSï¿½ï¿½ï¿½ï¿½
 typedef struct tagZCANLINUdsData
 {
-	const ZLIN_UDS_REQUEST* req;			// ÇëÇóÐÅÏ¢
+	const ZLIN_UDS_REQUEST* req;			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	BYTE reserved[28];
 }ZCANLINUdsData;
 
-// UDSÊý¾Ý½á¹¹£¬Ö§³ÖCAN/LINµÈUDS²»Í¬ÀàÐÍÊý¾Ý
+// UDSï¿½ï¿½ï¿½Ý½á¹¹ï¿½ï¿½Ö§ï¿½ï¿½CAN/LINï¿½ï¿½UDSï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 typedef struct tagZCANUdsRequestDataObj
 {
-	ZCAN_UDS_DATA_DEF    dataType;              // Êý¾ÝÀàÐÍ
+	ZCAN_UDS_DATA_DEF    dataType;              // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	union
 	{
-		ZCANCANFDUdsData zcanCANFDUdsData;      // CAN/CANFD UDSÊý¾Ý
-		ZCANLINUdsData   zcanLINUdsData;        // LIN UDSÊý¾Ý
-		BYTE             raw[63];               // RAWÊý¾Ý
-	} data;                                     // Êµ¼ÊÊý¾Ý, ÁªºÏÌå£¬ÓÐÐ§³ÉÔ±¸ù¾Ý dataType ×Ö¶Î¶ø¶¨
-	BYTE                 reserved[32];          // ±£ÁôÎ»
+		ZCANCANFDUdsData zcanCANFDUdsData;      // CAN/CANFD UDSï¿½ï¿½ï¿½ï¿½
+		ZCANLINUdsData   zcanLINUdsData;        // LIN UDSï¿½ï¿½ï¿½ï¿½
+		BYTE             raw[63];               // RAWï¿½ï¿½ï¿½ï¿½
+	} data;                                     // Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½å£¬ï¿½ï¿½Ð§ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ dataType ï¿½Ö¶Î¶ï¿½ï¿½ï¿½
+	BYTE                 reserved[32];          // ï¿½ï¿½ï¿½ï¿½Î»
 }ZCANUdsRequestDataObj;
 
 #pragma pack(pop)
@@ -897,48 +897,48 @@ UINT FUNC_CALL ZCAN_SetLINSubscribe(CHANNEL_HANDLE channel_handle, PZCAN_LIN_SUB
 UINT FUNC_CALL ZCAN_SetLINPublish(CHANNEL_HANDLE channel_handle, PZCAN_LIN_PUBLISH_CFG pSend, UINT nPublishCount);
 
 /**
- * @brief UDSÕï¶ÏÇëÇó
- * @param[in] device_handle Éè±¸¾ä±ú
- * @param[in] req ÇëÇóÐÅÏ¢
- * @param[out] resp ÏìÓ¦ÐÅÏ¢, ¿ÉÎªnullptr, ±íÊ¾²»¹ØÐÄÏìÓ¦Êý¾Ý
- * @param[out] dataBuf ÏìÓ¦Êý¾Ý»º´æÇø, ´æ·Å»ý¼«ÏìÓ¦µÄÕï¶ÏÊý¾Ý(²»°üº¬SID), Êµ¼Ê³¤¶ÈÎªresp.positive.data_len
- * @param[in] dataBufSize ÏìÓ¦Êý¾Ý»º´æÇø×Ü´óÐ¡£¬Èç¹ûÐ¡ÓÚÏìÓ¦Õï¶ÏÊý¾Ý³¤¶È£¬·µ»Ø STATUS_BUFFER_TOO_SMALL
- * @return Ö´ÐÐ½á¹û×´Ì¬
+ * @brief UDSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @param[in] device_handle ï¿½è±¸ï¿½ï¿½ï¿½
+ * @param[in] req ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+ * @param[out] resp ï¿½ï¿½Ó¦ï¿½ï¿½Ï¢, ï¿½ï¿½Îªnullptr, ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½
+ * @param[out] dataBuf ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½Å»ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SID), Êµï¿½Ê³ï¿½ï¿½ï¿½Îªresp.positive.data_len
+ * @param[in] dataBufSize ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü´ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½È£ï¿½ï¿½ï¿½ï¿½ï¿½ STATUS_BUFFER_TOO_SMALL
+ * @return Ö´ï¿½Ð½ï¿½ï¿½×´Ì¬
  */
 ZCAN_RET_STATUS FUNC_CALL ZCAN_UDS_Request(DEVICE_HANDLE device_handle, const ZCAN_UDS_REQUEST* req, ZCAN_UDS_RESPONSE* resp, BYTE* dataBuf, UINT dataBufSize);
 
 
 /**
- * @brief UDSÕï¶Ï¿ØÖÆ, ÈçÍ£Ö¹ÕýÔÚÖ´ÐÐµÄUDSÇëÇó
- * @param[in] device_handle Éè±¸¾ä±ú
- * @param[in] ctrl ¿ØÖÆÇëÇóÐÅÏ¢
- * @param[out] resp ÏìÓ¦ÐÅÏ¢, ¿ÉÎªnullptr, ±íÊ¾²»¹ØÐÄÏìÓ¦Êý¾Ý
- * @return Ö´ÐÐ½á¹û×´Ì¬
+ * @brief UDSï¿½ï¿½Ï¿ï¿½ï¿½ï¿½, ï¿½ï¿½Í£Ö¹ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ðµï¿½UDSï¿½ï¿½ï¿½ï¿½
+ * @param[in] device_handle ï¿½è±¸ï¿½ï¿½ï¿½
+ * @param[in] ctrl ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+ * @param[out] resp ï¿½ï¿½Ó¦ï¿½ï¿½Ï¢, ï¿½ï¿½Îªnullptr, ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½
+ * @return Ö´ï¿½Ð½ï¿½ï¿½×´Ì¬
  */
 ZCAN_RET_STATUS FUNC_CALL ZCAN_UDS_Control(DEVICE_HANDLE device_handle, const ZCAN_UDS_CTRL_REQ *ctrl, ZCAN_UDS_CTRL_RESP* resp);
 
 /**
-* @brief UDSÕï¶ÏÇëÇó(×Ü)
-* @param[in] device_handle Éè±¸¾ä±ú
-* @param[in] requestData ÇëÇóÐÅÏ¢
-* @param[out] resp ÏìÓ¦ÐÅÏ¢, ¿ÉÎªnullptr, ±íÊ¾²»¹ØÐÄÏìÓ¦Êý¾Ý
-* @param[out] dataBuf ÏìÓ¦Êý¾Ý»º´æÇø, ´æ·Å»ý¼«ÏìÓ¦µÄÕï¶ÏÊý¾Ý(²»°üº¬SID), Êµ¼Ê³¤¶ÈÎªresp.positive.data_len
-* @param[in] dataBufSize ÏìÓ¦Êý¾Ý»º´æÇø×Ü´óÐ¡£¬Èç¹ûÐ¡ÓÚÏìÓ¦Õï¶ÏÊý¾Ý³¤¶È£¬·µ»Ø STATUS_BUFFER_TOO_SMALL
+* @brief UDSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½)
+* @param[in] device_handle ï¿½è±¸ï¿½ï¿½ï¿½
+* @param[in] requestData ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+* @param[out] resp ï¿½ï¿½Ó¦ï¿½ï¿½Ï¢, ï¿½ï¿½Îªnullptr, ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½
+* @param[out] dataBuf ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½Å»ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SID), Êµï¿½Ê³ï¿½ï¿½ï¿½Îªresp.positive.data_len
+* @param[in] dataBufSize ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü´ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½È£ï¿½ï¿½ï¿½ï¿½ï¿½ STATUS_BUFFER_TOO_SMALL
 */
 ZCAN_RET_STATUS FUNC_CALL ZCAN_UDS_RequestEX(DEVICE_HANDLE device_handle, const ZCANUdsRequestDataObj* requestData, ZCAN_UDS_RESPONSE* resp, BYTE* dataBuf, UINT dataBufSize);
 
 
 /**
-* @brief UDSÕï¶Ï¿ØÖÆ, ÈçÍ£Ö¹ÕýÔÚÖ´ÐÐµÄUDSÇëÇó(×Ü)
-* @param[in] device_handle Éè±¸¾ä±ú
-* @param[in] dataType Êý¾ÝÀàÐÍ
-* @param[in] ctrl ¿ØÖÆÇëÇóÐÅÏ¢
-* @param[out] resp ÏìÓ¦ÐÅÏ¢, ¿ÉÎªnullptr, ±íÊ¾²»¹ØÐÄÏìÓ¦Êý¾Ý
-* @return Ö´ÐÐ½á¹û×´Ì¬
+* @brief UDSï¿½ï¿½Ï¿ï¿½ï¿½ï¿½, ï¿½ï¿½Í£Ö¹ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ðµï¿½UDSï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½)
+* @param[in] device_handle ï¿½è±¸ï¿½ï¿½ï¿½
+* @param[in] dataType ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+* @param[in] ctrl ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+* @param[out] resp ï¿½ï¿½Ó¦ï¿½ï¿½Ï¢, ï¿½ï¿½Îªnullptr, ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½
+* @return Ö´ï¿½Ð½ï¿½ï¿½×´Ì¬
 */
 ZCAN_RET_STATUS FUNC_CALL ZCAN_UDS_ControlEX(DEVICE_HANDLE device_handle, ZCAN_UDS_DATA_DEF dataType, const ZCAN_UDS_CTRL_REQ *ctrl, ZCAN_UDS_CTRL_RESP* resp);
 
-/*ÒÑÆúÓÃ*/
+/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 UINT FUNC_CALL ZCAN_SetLINSlaveMsg(CHANNEL_HANDLE channel_handle, PZCAN_LIN_MSG pSend, UINT nMsgCount);
 UINT FUNC_CALL ZCAN_ClearLINSlaveMsg(CHANNEL_HANDLE channel_handle, BYTE* pLINID, UINT nIDCount);
 
